@@ -1,35 +1,40 @@
-import read_file
-from utils import smell_title, start_test, finish_test
-from untitled_feature import find_untitled_features
-from envious_title_scenario import find_envious_title_scenarios
-from envious_title_feature import find_envious_title_features
+import runner
+from utils import title
+from tabulate import tabulate
 
-fake_feature_files_dir = "fake_feature_files"
-real_feature_files_dir = ".."
-
-# Untitled Feature
-smell_title("Untitled Feature")
-start_test()
-filenames = [f"{real_feature_files_dir}/thoughtbot_factory_bot_rails/fixture_replacement_config.feature"]
-contents = read_file.read_files(filenames)
-find_untitled_features(contents)
-finish_test()
-
-# Envious Title Feature
-smell_title("Envious Title Feature")
-start_test()
-filenames = [
-    f"{real_feature_files_dir}/inukshuk_jekyll-scholar/citation.feature",
-    f"{real_feature_files_dir}/inukshuk_jekyll-scholar/cite_details.feature"
+projects = [
+    "inukshuk_jekyll-scholar",
+    "keygen-sh_keygen-api",
+    "opencypher_openCypher",
+    "scality_Zenko",
+    "sdkman_sdkman-cli",
+    "serverlessworkflow_specification",
+    "thoughtbot_factory_bot_rails",
+    "RUN ALL PROJECTS",
+    "EXIT"
 ]
-contents = read_file.read_files(filenames)
-find_envious_title_features(contents)
-finish_test()
 
-# Envious Title Scenario
-smell_title("Envious Title Scenario")
-start_test()
-filenames = [f"{real_feature_files_dir}/inukshuk_jekyll-scholar/filter.feature"]
-contents = read_file.read_files(filenames)
-find_envious_title_scenarios(contents)
-finish_test()
+title("Select Project", "white")
+if projects:
+    options = [
+        [i + 1, item]
+        for i, item in enumerate(projects)
+    ]
+    print(tabulate(options, headers=["Project Index", "Description"], tablefmt="pretty"))
+else:
+    print("No content available")
+
+try:
+    choice = int(input("Choice: "))
+    choice -= 1
+
+    if -1 < choice < 7:
+        runner.execute_project(projects[choice])
+    elif choice == 7:
+        runner.execute_projects(projects[:-2])
+    elif choice == 8:
+        print("goodbye...")
+    else:
+        print("choice doesn't exist")
+except Exception as e:
+    print("ERROR: ", e)

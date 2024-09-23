@@ -1,5 +1,5 @@
 def read_file(filename):
-    file = open(filename, "r")
+    file = open(filename, "r", encoding="utf-8")
     content = file.read()
     file.close()
     return content
