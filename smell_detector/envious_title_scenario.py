@@ -63,27 +63,27 @@ def find_envious_title_scenarios(feature_files):
 feature_files_example = [
     """
     Feature: Example feature 1
-    Scenario: First scenario
-    Scenario: Second scenario
-    Scenario: First scenario
+        Scenario: First scenario
+        Scenario: Second scenario
+        Scenario: First scenario
     """,
     """
     Feature: Example feature 2
-    Scenario: First scenario
-    Scenario: Second scenario
-    Scenario: First scenario
-    Scenario: Second scenario
-    Scenario: First scenario
+        Scenario: First scenario
+        Scenario: Second scenario
+        Scenario: First scenario
+        Scenario: Second scenario
+        Scenario: First scenario
     """,
     """
     Feature: Example feature 3
-    Scenario: First scenario
-    Scenario: Third scenario
-    Scenario: Second scenario
+        Scenario: First scenario
+        Scenario: Third scenario
+        Scenario: Second scenario
     """,
     """
     Feature: Example feature 4
-    Scenario: Fourth scenario
+        Scenario: Fourth scenario
     """
 ]
 
