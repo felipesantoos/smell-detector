@@ -96,3 +96,39 @@ def stuttering_steps_structure(feature_index, keyword_counts, register, scenario
             "register": register
         })
     return total_stuttering_steps
+
+# Example usage
+feature_files_example = [
+    """
+    Feature: Example feature 1
+        Scenario: First scenario
+            Given step 1
+            Given step 2
+            When step 3
+            And step 4
+            Then step 5
+            And step 6
+    """,
+    """
+    Feature: Example feature 2
+        Scenario: First scenario
+            Given step 1
+            And step 2
+            When step 3
+            When step 4
+            Then step 5
+            And step 6
+    """,
+    """
+    Feature: Example feature 3
+        Scenario: First scenario
+            Given step 1
+            And step 2
+            When step 3
+            And step 4
+            Then step 5
+            Then step 6
+    """,
+]
+
+# find_stuttering_steps(feature_files_example)
