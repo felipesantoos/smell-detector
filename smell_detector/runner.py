@@ -5,6 +5,7 @@ from untitled_feature import find_untitled_features
 from envious_title_scenario import find_envious_title_scenarios
 from envious_title_feature import find_envious_title_features
 from duplicate_scenario import find_duplicate_scenarios
+from keyword_duplication import find_keyword_duplication
 from time import sleep
 
 feature_files_dir = ".."
@@ -45,6 +46,12 @@ def execute_project(project):
     title("Duplicate Scenario", "blue")
     start_test()
     find_duplicate_scenarios(contents)
+    finish_test()
+
+    # Keyword Duplication
+    title("Keyword Duplication", "blue")
+    start_test()
+    find_keyword_duplication(contents)
     finish_test()
 
     sleep(10)
