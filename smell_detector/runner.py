@@ -5,6 +5,7 @@ from untitled_feature import find_untitled_features
 from envious_title_scenario import find_envious_title_scenarios
 from envious_title_feature import find_envious_title_features
 from duplicate_scenario import find_duplicate_scenarios
+from stuttering_step import find_stuttering_steps
 from keyword_duplication import find_keyword_duplication
 from time import sleep
 
@@ -12,7 +13,7 @@ feature_files_dir = ".."
 
 def execute_project(project):
     # Catch all features in a specific project
-    path = f"{feature_files_dir}/{project}""/"
+    path = f"{feature_files_dir}/{project}/"
     project_features = os.listdir(path)
 
     # Feature glossary
@@ -46,6 +47,12 @@ def execute_project(project):
     title("Duplicate Scenario", "blue")
     start_test()
     find_duplicate_scenarios(contents)
+    finish_test()
+
+    # Stuttering Step
+    title("Stuttering Step", "blue")
+    start_test()
+    find_stuttering_steps(contents)
     finish_test()
 
     # Keyword Duplication
