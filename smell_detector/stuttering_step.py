@@ -15,7 +15,7 @@ def find_stuttering_steps(feature_files):
     scenario_pattern = r"(Scenario:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
     scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
     example_pattern = r"(Example:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
-    step_pattern = r"(Given.*|When.*|Then.*|And.*|But.*)"
+    step_pattern = r"(?:Given|When|Then|And|But)\s+(.*)"
 
     stuttering_steps = []
     total_stuttering_steps = 0
