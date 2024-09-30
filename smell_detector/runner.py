@@ -3,17 +3,17 @@ import os
 from utils import title, start_test, finish_test, feature_glossary
 from untitled_feature import find_untitled_features
 from envious_title_scenario import find_envious_title_scenarios
-from envious_title_feature import find_envious_title_features
+from duplicate_feature_title import find_duplicate_feature_titles
 from duplicate_scenario import find_duplicate_scenarios
 from stuttering_step import find_stuttering_steps
 from keyword_duplication import find_keyword_duplication
 from time import sleep
 
-feature_files_dir = ".."
+feature_files_dir = "../"
 
 def execute_project(project):
     # Catch all features in a specific project
-    path = f"{feature_files_dir}/{project}/"
+    path = f"{feature_files_dir}{project}/"
     project_features = os.listdir(path)
 
     # Feature glossary
@@ -28,13 +28,13 @@ def execute_project(project):
     # Untitled Feature
     title("Untitled Feature", "blue")
     start_test()
-    find_untitled_features(contents)
+    find_untitled_features([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/untitled_feature.csv")
     finish_test()
 
-    # Envious Title Feature
-    title("Envious Title Feature", "blue")
+    # Duplicate Feature Title
+    title("Duplicate Feature Title", "blue")
     start_test()
-    find_envious_title_features(contents)
+    find_duplicate_feature_titles([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_feature_title.csv")
     finish_test()
 
     # Envious Title Scenario
