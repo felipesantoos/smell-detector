@@ -13,6 +13,9 @@ class TestDuplicateFeatureTitles(unittest.TestCase):
 
     def tearDown(self):
         sys.stdout = sys.__stdout__
+        # Remove the test CSV file if it exists
+        if os.path.exists(self.test_csv_filename):
+            os.remove(self.test_csv_filename)
 
     def test_extract_features(self):
         feature_files = [
