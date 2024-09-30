@@ -1,3 +1,4 @@
 Filename,Line Number,Matched Line
-thoughtbot_factory_bot_rails/fixture_replacement_config.feature,1,Feature:
-thoughtbot_factory_bot_rails/generators.feature,1,Feature:
+file1.feature,2,Feature:
+file2.feature,2,Feature:
+file4.feature,2,Feature:
