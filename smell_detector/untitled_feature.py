@@ -1,44 +1,69 @@
 import re
+import csv
+from tabulate import tabulate
 
-def find_untitled_features(feature_files):
+def find_untitled_features(filenames, feature_files, csv_filename=None):
     """
     Finds untitled features in a list of feature files. An untitled feature is defined as a line 
     containing "Feature:" followed by optional whitespace and nothing else until the end of the line.
     
     Args:
     - feature_files (list of str): The content of the feature files.
+    - filenames (list of str): The names of the feature files.
+    - csv_filename (str, optional): The name of the CSV file to save results.
     
     Returns:
     - None
     """
-    # Regex pattern
     pattern = r"Feature:\s*$"  # "Feature:" followed by whitespace, and end of line
+    results = []
 
-    for index, feature_file in enumerate(feature_files):
-        match = re.search(pattern, feature_file, re.MULTILINE)  # Use search since there's only one "Feature:"
-        
-        # Report results
-        if match:
-            print(f"File {index + 1}: Untitled feature found.")
-        else:
-            print(f"File {index + 1}: No untitled feature found.")
+    for index, (feature_file, filename) in enumerate(zip(feature_files, filenames)):
+        for line_number, line in enumerate(feature_file.splitlines(), start=1):
+            match = re.search(pattern, line)
+            if match:
+                results.append((filename, line_number, line.strip()))  # Store filename, line number, and matched line
+                break
+
+    if results:
+        # Print the table
+        print(tabulate(results, headers=["Filename", "Line Number", "Matched Line"], tablefmt="grid"))
+
+        # Generate CSV if filename is provided
+        if csv_filename:
+            with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerow(["Filename", "Line Number", "Matched Line"])  # Write header
+                csv_writer.writerows(results)  # Write data
+            print(f"Results saved to {csv_filename}.")
+    else:
+        print("No untitled features found.")
 
 # Example usage
-feature_files_example = [
-    """
-    Feature:
-    Scenario: Valid scenario
-    """,
-    """
-    Feature: 
-    """,
-    """
-    Feature:     
-    """,
-    """
-    Feature: Some title
-    Scenario: Another valid scenario
-    """
-]
+def run_example():
+    feature_file_names = [
+        "file1.feature",
+        "file2.feature",
+        "file3.feature",
+        "file4.feature"
+    ]
+    feature_file_contents = [
+        """
+        Feature:
+            Scenario: Valid scenario
+        """,
+        """
+        Feature: 
+        """,
+        """
+        Feature: Some title
+            Scenario: Another valid scenario
+        """,
+        """
+        Feature:     
+        """
+    ]
 
-# find_untitled_features(feature_files_example)
+    find_untitled_features(feature_file_names, feature_file_contents, "reports/untitled_feature.csv")
+
+run_example()
