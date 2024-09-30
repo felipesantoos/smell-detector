@@ -3,7 +3,7 @@ from io import StringIO
 import sys
 from duplicate_feature_title import extract_features, analyze_features, print_report, find_duplicate_feature_titles
 
-class TestFeatureAnalysis(unittest.TestCase):
+class TestDuplicateFeatureTitles(unittest.TestCase):
 
     def setUp(self):
         self.held_output = StringIO()
