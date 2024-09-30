@@ -31,8 +31,8 @@ def execute_project(project):
     find_untitled_features([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/untitled_feature.csv")
     finish_test()
 
-    # Duplicate Title Feature
-    title("Duplicate Title Feature", "blue")
+    # Duplicate Feature Title
+    title("Duplicate Feature Title", "blue")
     start_test()
     find_duplicate_feature_titles([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_feature_title.csv")
     finish_test()
