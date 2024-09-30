@@ -1,3 +1,4 @@
+import os
 import unittest
 from io import StringIO
 import sys
@@ -8,6 +9,7 @@ class TestDuplicateFeatureTitles(unittest.TestCase):
     def setUp(self):
         self.held_output = StringIO()
         sys.stdout = self.held_output
+        self.test_csv_filename = "test_duplicate_feature_title.csv"
 
     def tearDown(self):
         sys.stdout = sys.__stdout__
@@ -46,7 +48,7 @@ class TestDuplicateFeatureTitles(unittest.TestCase):
         report_data = [
             ["Feature: Example feature 1", 2, "file1.feature, file2.feature"]
         ]
-        print_report(total_features, total_distinct_features, report_data)
+        print_report(total_features, total_distinct_features, report_data, self.test_csv_filename)
         output = self.held_output.getvalue().strip().split('\n')
         self.assertIn("Total number of features across all files: 4", output[0])
         self.assertIn("Total number of distinct features across all files: 3", output[1])
@@ -56,6 +58,12 @@ class TestDuplicateFeatureTitles(unittest.TestCase):
         self.assertIn("+-------+----------------------------+-------+------------------------------+", output[5])
         self.assertIn("|   1   | Feature: Example feature 1 |   2   | file1.feature, file2.feature |", output[6])
         self.assertIn("+-------+----------------------------+-------+------------------------------+", output[7])
+
+        self.assertTrue(os.path.exists(self.test_csv_filename))
+        with open(self.test_csv_filename, 'r', newline='', encoding='utf-8') as csvfile:
+            csv_content = csvfile.readlines()
+            self.assertEqual(csv_content[0].strip(), "Index,Feature,Count,Filenames")
+            self.assertEqual(csv_content[1].strip(), "1,Feature: Example feature 1,2,\"file1.feature, file2.feature\"")
 
     def test_find_duplicate_feature_titles(self):
         feature_files_example = [
