@@ -2,7 +2,7 @@ import read_file
 import os
 from utils import title, start_test, finish_test, feature_glossary
 from untitled_feature import find_untitled_features
-from envious_title_scenario import find_envious_title_scenarios
+from smell_detector.duplicate_scenario_title import find_envious_title_scenarios
 from duplicate_feature_title import find_duplicate_feature_titles
 from duplicate_scenario import find_duplicate_scenarios
 from stuttering_step import find_stuttering_steps
