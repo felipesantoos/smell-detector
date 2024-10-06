@@ -1,5 +1,6 @@
 import re
 import csv
+import os
 from tabulate import tabulate
 
 def extract_features(filenames, feature_files):
@@ -73,16 +74,18 @@ def print_report(total_features, total_distinct_features, report_data, csv_filen
     
     if report_data:
         indexed_report_data = [
-            [i + 1, item[0], item[1], item[2]] 
+            [item[0], item[1], item[2]] 
             for i, item in enumerate(report_data)
         ]
-        print(tabulate(indexed_report_data, headers=["Index", "Feature", "Count", "Filenames"], tablefmt="pretty"))
+        print(tabulate(indexed_report_data, headers=["Feature", "Count", "Filenames"], tablefmt="pretty"))
         
         # Generate CSV if filename is provided
         if csv_filename:
-            with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
+            file_exists = os.path.isfile(csv_filename)  # Check if file already exists
+            with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile)
-                csv_writer.writerow(["Index", "Feature", "Count", "Filenames"])  # Write header
+                if not file_exists:  # Write header only if the file is new
+                    csv_writer.writerow(["Feature", "Count", "Filenames"])  # Write header
                 csv_writer.writerows(indexed_report_data)  # Write data
             print(f"Report saved to {csv_filename}.")
     else:
@@ -135,4 +138,6 @@ def run_example():
         "file6.feature"
     ]
 
-    find_duplicate_feature_titles(feature_files_example, feature_filenames, "reports/duplicate_feature_title.csv")
+    find_duplicate_feature_titles(feature_filenames, feature_files_example, "reports/duplicate_feature_title.csv")
+
+run_example()

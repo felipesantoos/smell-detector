@@ -56,17 +56,17 @@ class TestDuplicateFeatureTitles(unittest.TestCase):
         self.assertIn("Total number of features across all files: 4", output[0])
         self.assertIn("Total number of distinct features across all files: 3", output[1])
         self.assertIn("Features that appeared more than once:", output[2])
-        self.assertIn("+-------+----------------------------+-------+------------------------------+", output[3])
-        self.assertIn("| Index |          Feature           | Count |          Filenames           |", output[4])
-        self.assertIn("+-------+----------------------------+-------+------------------------------+", output[5])
-        self.assertIn("|   1   | Feature: Example feature 1 |   2   | file1.feature, file2.feature |", output[6])
-        self.assertIn("+-------+----------------------------+-------+------------------------------+", output[7])
+        self.assertIn("+----------------------------+-------+------------------------------+", output[3])
+        self.assertIn("|          Feature           | Count |          Filenames           |", output[4])
+        self.assertIn("+----------------------------+-------+------------------------------+", output[5])
+        self.assertIn("| Feature: Example feature 1 |   2   | file1.feature, file2.feature |", output[6])
+        self.assertIn("+----------------------------+-------+------------------------------+", output[7])
 
         self.assertTrue(os.path.exists(self.test_csv_filename))
         with open(self.test_csv_filename, 'r', newline='', encoding='utf-8') as csvfile:
             csv_content = csvfile.readlines()
-            self.assertEqual(csv_content[0].strip(), "Index,Feature,Count,Filenames")
-            self.assertEqual(csv_content[1].strip(), "1,Feature: Example feature 1,2,\"file1.feature, file2.feature\"")
+            self.assertEqual(csv_content[0].strip(), "Feature,Count,Filenames")
+            self.assertEqual(csv_content[1].strip(), "Feature: Example feature 1,2,\"file1.feature, file2.feature\"")
 
     def test_find_duplicate_feature_titles(self):
         feature_files_example = [

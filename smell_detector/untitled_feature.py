@@ -1,5 +1,6 @@
 import re
 import csv
+import os
 from tabulate import tabulate
 
 def find_untitled_features(filenames, feature_files, csv_filename=None):
@@ -22,7 +23,7 @@ def find_untitled_features(filenames, feature_files, csv_filename=None):
         for line_number, line in enumerate(feature_file.splitlines(), start=1):
             match = re.search(pattern, line)
             if match:
-                results.append((filename, line_number, line.strip()))  # Store filename, line number, and matched line
+                results.append((filename, line_number, line.lstrip()))  # Store filename, line number, and matched line
                 break
 
     if results:
@@ -31,9 +32,11 @@ def find_untitled_features(filenames, feature_files, csv_filename=None):
 
         # Generate CSV if filename is provided
         if csv_filename:
-            with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
+            file_exists = os.path.isfile(csv_filename)  # Check if file already exists
+            with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile)
-                csv_writer.writerow(["Filename", "Line Number", "Matched Line"])  # Write header
+                if not file_exists:  # Write header only if the file is new
+                    csv_writer.writerow(["Filename", "Line Number", "Matched Line"])  # Write header
                 csv_writer.writerows(results)  # Write data
             print(f"Results saved to {csv_filename}.")
     else:
@@ -65,3 +68,5 @@ def run_example():
     ]
 
     find_untitled_features(feature_file_names, feature_file_contents, "reports/untitled_feature.csv")
+
+run_example()
