@@ -61,6 +61,8 @@ def execute_project(project):
     find_keyword_duplication(contents)
     finish_test()
 
+    sleep(10)
+
 def execute_projects(projects):
     for project in projects:
         execute_project(project)

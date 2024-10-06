@@ -140,4 +140,4 @@ def run_example():
 
     find_duplicate_feature_titles(feature_filenames, feature_files_example, "reports/duplicate_feature_title.csv")
 
-run_example()
+# run_example()
