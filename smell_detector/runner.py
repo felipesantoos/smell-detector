@@ -2,12 +2,11 @@ import read_file
 import os
 from utils import title, start_test, finish_test, feature_glossary
 from untitled_feature import find_untitled_features
-from smell_detector.duplicate_scenario_title import find_envious_title_scenarios
+from duplicate_scenario_title import find_duplicate_scenario_titles
 from duplicate_feature_title import find_duplicate_feature_titles
 from duplicate_scenario import find_duplicate_scenarios
 from stuttering_step import find_stuttering_steps
 from keyword_duplication import find_keyword_duplication
-from time import sleep
 
 feature_files_dir = "../"
 
@@ -37,10 +36,10 @@ def execute_project(project):
     find_duplicate_feature_titles([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_feature_title.csv")
     finish_test()
 
-    # Envious Title Scenario
-    title("Envious Title Scenario", "blue")
+    # Duplicate Scenario Title
+    title("Duplicate Title Scenario", "blue")
     start_test()
-    find_envious_title_scenarios(contents)
+    find_duplicate_scenario_titles([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_scenario_title.csv")
     finish_test()
 
     # Duplicate Scenario
@@ -60,8 +59,6 @@ def execute_project(project):
     start_test()
     find_keyword_duplication(contents)
     finish_test()
-
-    sleep(10)
 
 def execute_projects(projects):
     for project in projects:

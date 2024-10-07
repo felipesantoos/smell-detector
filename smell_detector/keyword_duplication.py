@@ -11,10 +11,10 @@ def find_keyword_duplication(feature_files):
     Returns:
     - None
     """
-    background_pattern = r"(Background:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
-    scenario_pattern = r"(Scenario:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
-    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
-    example_pattern = r"(Example:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
+    background_pattern = r"(Background:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
+    scenario_pattern = r"(Scenario:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
+    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
+    example_pattern = r"(Example:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
     step_pattern = r"(Given.*|When.*|Then.*)"
 
     duplicated_registers = []
@@ -55,6 +55,11 @@ def find_keyword_duplication(feature_files):
 
 # Verifying into background or scenario if it has some duplicated keyword
 def duplicated_analysis(feature_index, registers, step_pattern, duplicated_registers, total_duplicated_keywords):
+    original_registers = registers.copy()
+
+    for register_index, register in enumerate(registers):
+        registers[register_index] = re.sub("\n\n", "\n", register)
+
     for register_index, register in enumerate(registers):
         register = register.strip()
         steps = re.findall(step_pattern, register)
@@ -63,7 +68,7 @@ def duplicated_analysis(feature_index, registers, step_pattern, duplicated_regis
         keyword_counts = duplicated_keywords_counter(steps)
 
         # Organizing the result into a list
-        total_duplicated_keywords = duplicated_keywords_structure(feature_index, keyword_counts, register, register_index,
+        total_duplicated_keywords = duplicated_keywords_structure(feature_index, keyword_counts, original_registers[register_index], register_index,
                                                             duplicated_registers, total_duplicated_keywords)
     return total_duplicated_keywords
 

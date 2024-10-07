@@ -11,11 +11,11 @@ def find_stuttering_steps(feature_files):
     Returns:
     - None
     """
-    background_pattern = r"(Background:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
-    scenario_pattern = r"(Scenario:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
-    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
-    example_pattern = r"(Example:[\s\S]*?)(?=Scenario:|Scenario Outline:|Example:|$)"
-    step_pattern = r"(?:Given|When|Then|And|But)\s+(.*)"
+    background_pattern = r"(Background:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
+    scenario_pattern = r"(Scenario:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
+    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
+    example_pattern = r"(Example:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
+    step_pattern = r"(?:Given|When|Then|And|But)([\s\S]*?)(?=Given|When|Then|And|But|Scenario:|Scenario Outline:|Example:|Examples:|$)"
 
     stuttering_steps = []
     total_stuttering_steps = 0
@@ -55,6 +55,11 @@ def find_stuttering_steps(feature_files):
 
 # Verifying into background or scenario if it has some stuttering step
 def stuttering_analysis(feature_index, registers, step_pattern, stuttering_steps, total_stuttering_steps):
+    original_registers = registers.copy()
+
+    for register_index, register in enumerate(registers):
+        registers[register_index] = re.sub("\n\n", "\n", register)
+
     for register_index, register in enumerate(registers):
         register = register.strip()
         steps = re.findall(step_pattern, register)
@@ -63,7 +68,7 @@ def stuttering_analysis(feature_index, registers, step_pattern, stuttering_steps
         stuttering_counts = stuttering_counter(steps)
 
         # Organizing the result into a list
-        total_stuttering_steps = stuttering_steps_structure(feature_index, stuttering_counts, register, register_index,
+        total_stuttering_steps = stuttering_steps_structure(feature_index, stuttering_counts, original_registers[register_index], register_index,
                                                             stuttering_steps, total_stuttering_steps)
     return total_stuttering_steps
 
