@@ -32,6 +32,9 @@ def find_untitled_features(filenames, feature_files, csv_filename=None):
 
         # Generate CSV if filename is provided
         if csv_filename:
+            report_dir = './reports'
+            if not os.path.exists(report_dir):
+                os.mkdir(report_dir)
             file_exists = os.path.isfile(csv_filename)  # Check if file already exists
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile)

@@ -45,7 +45,7 @@ def execute_project(project):
     # Duplicate Scenario
     title("Duplicate Scenario", "blue")
     start_test()
-    find_duplicate_scenarios(contents)
+    find_duplicate_scenarios([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_scenario.csv")
     finish_test()
 
     # Stuttering Step
