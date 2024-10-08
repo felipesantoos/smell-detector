@@ -8,8 +8,8 @@ def extract_features(filenames, feature_files):
     Extracts features from a list of feature files along with their filenames.
     
     Args:
-    - feature_files (list of str): The content of the feature files.
     - filenames (list of str): The names of the feature files.
+    - feature_files (list of str): The content of the feature files.
     
     Returns:
     - list of tuples: List of extracted feature titles with corresponding filenames.

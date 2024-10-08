@@ -9,8 +9,8 @@ def find_untitled_features(filenames, feature_files, csv_filename=None):
     containing "Feature:" followed by optional whitespace and nothing else until the end of the line.
     
     Args:
-    - feature_files (list of str): The content of the feature files.
     - filenames (list of str): The names of the feature files.
+    - feature_files (list of str): The content of the feature files.
     - csv_filename (str, optional): The name of the CSV file to save results.
     
     Returns:
