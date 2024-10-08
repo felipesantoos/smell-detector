@@ -3,14 +3,14 @@ import csv
 import os
 from tabulate import tabulate
 
-def find_duplicate_scenario_titles(feature_filenames, feature_files, csv_filename=None):
+def find_duplicate_scenario_titles(filenames, feature_files, csv_filename=None):
     """
     Finds duplicate scenario titles in a list of feature files. A duplicate title scenario is defined 
     as a scenario that appears more than once.
     
     Args:
+    - filenames (list of str): The names of the feature files.
     - feature_files (list of str): The content of the feature files.
-    - feature_filenames (list of str): The names of the feature files.
     - csv_filename (str, optional): Name of the CSV file to save the report.
     
     Returns:
@@ -21,15 +21,17 @@ def find_duplicate_scenario_titles(feature_filenames, feature_files, csv_filenam
     total_distinct_scenarios = 0
     total_occurrences = 0
 
-    for index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
+    for index, (filename, feature_file) in enumerate(zip(filenames, feature_files)):
         # Find all scenarios in the current feature file
-        pattern = r"Scenario:.*"
+        pattern = r"Scenario:.*|Example:.*|Scenario Outline:.*"
         matches = re.findall(pattern, feature_file)
 
         total_scenarios += len(matches)
         distinct_values = list(set(matches))
         total_distinct_scenarios += len(distinct_values)
         number_of_occurrences_of_this_smell_in_this_file = 0
+
+        print(matches)
 
         # Prepare data for tabulation
         report_data = []
@@ -77,40 +79,104 @@ def find_duplicate_scenario_titles(feature_filenames, feature_files, csv_filenam
         print("No scenarios appeared more than once.")
 
     print(f"- Total number of occurrences of this smell across all files: {total_occurrences}")
+# find_duplicate_scenario_titles(filenames_example, feature_files_example, "reports/duplicate_scenario_title.csv")
+
 
 # Example usage
-feature_files_example = [
-    """
-    Feature: Example feature 1
-        Scenario: First scenario
-        Scenario: Second scenario
-        Scenario: First scenario
-    """,
-    """
-    Feature: Example feature 2
-        Scenario: First scenario
-        Scenario: Second scenario
-        Scenario: First scenario
-        Scenario: Second scenario
-        Scenario: First scenario
-    """,
-    """
-    Feature: Example feature 3
-        Scenario: First scenario
-        Scenario: Third scenario
-        Scenario: Second scenario
-    """,
-    """
-    Feature: Example feature 4
-        Scenario: Fourth scenario
-    """
-]
+def run_example():
+    feature_files_example = [
+        # Feature:
+        """
+        Feature: Example feature 1
+            Scenario: First scenario
+            Scenario: Second scenario
+            Scenario: First scenario
+        """,
+        """
+        Feature: Example feature 2
+            Scenario: First scenario
+            Scenario: Second scenario
+            Scenario: First scenario
+            Scenario: Second scenario
+            Scenario: First scenario
+        """,
+        """
+        Feature: Example feature 3
+            Scenario: First scenario
+            Scenario: Third scenario
+            Scenario: Second scenario
+        """,
+        """
+        Feature: Example feature 4
+            Scenario: Fourth scenario
+        """,
+        # Example:
+        """
+        Feature: Example feature 1
+            Example: First scenario
+            Example: Second scenario
+            Example: First scenario
+        """,
+        """
+        Feature: Example feature 2
+            Example: First scenario
+            Example: Second scenario
+            Example: First scenario
+            Example: Second scenario
+            Example: First scenario
+        """,
+        """
+        Feature: Example feature 3
+            Example: First scenario
+            Example: Third scenario
+            Example: Second scenario
+        """,
+        """
+        Feature: Example feature 4
+            Example: Fourth scenario
+        """,
+        # Scenario Outline:
+        """
+        Feature: Example feature 1
+            Scenario Outline: First scenario
+            Scenario Outline: Second scenario
+            Scenario Outline: First scenario
+        """,
+        """
+        Feature: Example feature 2
+            Scenario Outline: First scenario
+            Scenario Outline: Second scenario
+            Scenario Outline: First scenario
+            Scenario Outline: Second scenario
+            Scenario Outline: First scenario
+        """,
+        """
+        Feature: Example feature 3
+            Scenario Outline: First scenario
+            Scenario Outline: Third scenario
+            Scenario Outline: Second scenario
+        """,
+        """
+        Feature: Example feature 4
+            Scenario Outline: Fourth scenario
+        """
+    ]
 
-feature_filenames_example = [
-    "file1.feature",
-    "file2.feature",
-    "file3.feature",
-    "file4.feature"
-]
+    filenames_example = [
+        "file1.feature",
+        "file2.feature",
+        "file3.feature",
+        "file4.feature",
+        "file5.feature",
+        "file6.feature",
+        "file7.feature",
+        "file8.feature",
+        "file9.feature",
+        "file10.feature",
+        "file11.feature",
+        "file12.feature"
+    ]
 
-# find_duplicate_scenario_titles(feature_filenames_example, feature_files_example, "reports/duplicate_scenario_title.csv")
+    find_duplicate_scenario_titles(filenames_example, feature_files_example, "reports/duplicate_scenario_title.csv")
+
+# run_example()
