@@ -80,11 +80,10 @@ def print_report(total_features, total_distinct_features, report_data, csv_filen
         print(tabulate(indexed_report_data, headers=["Feature", "Count", "Filenames"], tablefmt="pretty"))
         
         # Generate CSV if filename is provided
-        report_dir = './reports'
-        if not os.path.exists(report_dir):
-            os.mkdir(report_dir)
-
         if csv_filename:
+            report_dir = './reports'
+            if not os.path.exists(report_dir):
+                os.mkdir(report_dir)
             file_exists = os.path.isfile(csv_filename)  # Check if file already exists
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile)

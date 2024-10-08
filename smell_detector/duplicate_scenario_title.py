@@ -63,11 +63,10 @@ def find_duplicate_scenario_titles(filenames, feature_files, csv_filename=None):
         print(tabulate(indexed_report_data, headers=["Feature File", "Scenario", "Count", "Indexes", "Lines"], tablefmt="pretty"))
         
         # Generate CSV if filename is provided
-        report_dir = './reports'
-        if not os.path.exists(report_dir):
-            os.mkdir(report_dir)
-
         if csv_filename:
+            report_dir = './reports'
+            if not os.path.exists(report_dir):
+                os.mkdir(report_dir)
             file_exists = os.path.isfile(csv_filename)  # Check if file already exists
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile)
@@ -79,8 +78,6 @@ def find_duplicate_scenario_titles(filenames, feature_files, csv_filename=None):
         print("No scenarios appeared more than once.")
 
     print(f"- Total number of occurrences of this smell across all files: {total_occurrences}")
-# find_duplicate_scenario_titles(filenames_example, feature_files_example, "reports/duplicate_scenario_title.csv")
-
 
 # Example usage
 def run_example():
