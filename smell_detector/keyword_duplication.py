@@ -1,12 +1,16 @@
+import csv
+import os
 import re
 from tabulate import tabulate
 
-def find_keyword_duplication(feature_files):
+def find_keyword_duplication(feature_filenames, feature_files, csv_filename=None):
     """
     Finds all the keyword duplications in the feature file.
 
     Args:
+    - feature_filenames (list of str): The names of the feature files.
     - feature_files (list of str): The content of the feature files.
+    - csv_filename (str, optional): Name of the CSV file to save the report.
 
     Returns:
     - None
@@ -20,7 +24,7 @@ def find_keyword_duplication(feature_files):
     duplicated_registers = []
     total_duplicated_keywords = 0
 
-    for feature_index, feature_file in enumerate(feature_files):
+    for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find background or scenarios into feature
         backgrounds = re.findall(background_pattern, feature_file)
         scenarios = re.findall(scenario_pattern, feature_file)
@@ -32,10 +36,10 @@ def find_keyword_duplication(feature_files):
         scenarios_outline = [so.strip() for so in scenarios_outline if so.strip()]
         examples = [e.strip() for e in examples if e.strip()]
 
-        total_duplicated_keywords = duplicated_analysis(feature_index, backgrounds, step_pattern, duplicated_registers, total_duplicated_keywords)
-        total_duplicated_keywords = duplicated_analysis(feature_index, scenarios, step_pattern, duplicated_registers, total_duplicated_keywords)
-        total_duplicated_keywords = duplicated_analysis(feature_index, scenarios_outline, step_pattern, duplicated_registers, total_duplicated_keywords)
-        total_duplicated_keywords = duplicated_analysis(feature_index, examples, step_pattern, duplicated_registers, total_duplicated_keywords)
+        total_duplicated_keywords = duplicated_analysis(filename, backgrounds, step_pattern, duplicated_registers, total_duplicated_keywords)
+        total_duplicated_keywords = duplicated_analysis(filename, scenarios, step_pattern, duplicated_registers, total_duplicated_keywords)
+        total_duplicated_keywords = duplicated_analysis(filename, scenarios_outline, step_pattern, duplicated_registers, total_duplicated_keywords)
+        total_duplicated_keywords = duplicated_analysis(filename, examples, step_pattern, duplicated_registers, total_duplicated_keywords)
 
     if duplicated_registers:
         # Transforming duplicated_keywords into a string
@@ -43,18 +47,32 @@ def find_keyword_duplication(feature_files):
             register["duplicated_keywords"] = ', '.join(register["duplicated_keywords"])
 
         report_data = [
-            [duplicated_register["feature"], duplicated_register["scenario_type_position"], duplicated_register["duplicated_keywords"], duplicated_register["register"]]
+            [duplicated_register["filename"], duplicated_register["scenario_type_position"], duplicated_register["duplicated_keywords"], duplicated_register["register"]]
             for duplicated_register in duplicated_registers
         ]
 
         print(f"- Total number of duplicated keywords: {total_duplicated_keywords}")
-        print(tabulate(report_data, headers=["Feature", "Position by Type", "Duplicated Keyword", "Reference"], tablefmt="grid"))
+        print(tabulate(report_data, headers=["Filename", "Position by Type", "Duplicated Keyword", "Reference"], tablefmt="grid"))
+
+        # Generate CSV if filename is provided
+        if csv_filename:
+            report_dir = './reports'
+            if not os.path.exists(report_dir):
+                os.mkdir(report_dir)
+
+            file_exists = os.path.isfile(csv_filename)  # Check if file already exists
+            with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
+                csv_writer = csv.writer(csvfile, delimiter=';')
+                if not file_exists:  # Write header only if the file is new
+                    csv_writer.writerow(["Filename", "Position by Type", "Duplicated Keyword", "Reference"])  # Write header
+                csv_writer.writerows(report_data)  # Write data
+            print(f"Report saved to {csv_filename}.")
     else:
         print("No registers with duplicated keywords.")
 
 
 # Verifying into background or scenario if it has some duplicated keyword
-def duplicated_analysis(feature_index, registers, step_pattern, duplicated_registers, total_duplicated_keywords):
+def duplicated_analysis(filename, registers, step_pattern, duplicated_registers, total_duplicated_keywords):
     original_registers = registers.copy()
 
     for register_index, register in enumerate(registers):
@@ -68,7 +86,7 @@ def duplicated_analysis(feature_index, registers, step_pattern, duplicated_regis
         keyword_counts = duplicated_keywords_counter(steps)
 
         # Organizing the result into a list
-        total_duplicated_keywords = duplicated_keywords_structure(feature_index, keyword_counts, original_registers[register_index], register_index,
+        total_duplicated_keywords = duplicated_keywords_structure(filename, keyword_counts, original_registers[register_index], register_index,
                                                             duplicated_registers, total_duplicated_keywords)
     return total_duplicated_keywords
 
@@ -85,7 +103,7 @@ def duplicated_keywords_counter(steps):
     return keyword_counts
 
 
-def duplicated_keywords_structure(feature_index, keyword_counts, register, scenario_index, duplicated_registers,
+def duplicated_keywords_structure(filename, keyword_counts, register, scenario_index, duplicated_registers,
                                total_duplicated_keywords):
     duplicated_keywords = []
     for keyword, count in keyword_counts.items():
@@ -95,7 +113,7 @@ def duplicated_keywords_structure(feature_index, keyword_counts, register, scena
 
     if duplicated_keywords:
         duplicated_registers.append({
-            "feature": feature_index + 1,
+            "filename": filename,
             "scenario_type_position": scenario_index + 1,
             "duplicated_keywords": duplicated_keywords,
             "register": register
@@ -136,4 +154,10 @@ feature_files_example = [
     """,
 ]
 
-# find_keyword_duplication(feature_files_example)
+filenames_example = [
+    "file1.feature",
+    "file2.feature",
+    "file3.feature"
+]
+
+# find_keyword_duplication(filenames_example, feature_files_example)

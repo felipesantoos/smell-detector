@@ -1,12 +1,16 @@
+import csv
+import os
 import re
 from tabulate import tabulate
 
-def find_stuttering_steps(feature_files):
+def find_stuttering_steps(feature_filenames, feature_files, csv_filename=None):
     """
     Finds all the stuttering steps in the feature file.
 
     Args:
+    - feature_filenames (list of str): The names of the feature files.
     - feature_files (list of str): The content of the feature files.
+    - csv_filename (str, optional): Name of the CSV file to save the report.
 
     Returns:
     - None
@@ -20,7 +24,7 @@ def find_stuttering_steps(feature_files):
     stuttering_steps = []
     total_stuttering_steps = 0
 
-    for feature_index, feature_file in enumerate(feature_files):
+    for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find background or scenarios into feature
         backgrounds = re.findall(background_pattern, feature_file)
         scenarios = re.findall(scenario_pattern, feature_file)
@@ -32,10 +36,10 @@ def find_stuttering_steps(feature_files):
         scenarios_outline = [so.strip() for so in scenarios_outline if so.strip()]
         examples = [e.strip() for e in examples if e.strip()]
 
-        total_stuttering_steps = stuttering_analysis(feature_index, backgrounds, step_pattern, stuttering_steps, total_stuttering_steps)
-        total_stuttering_steps = stuttering_analysis(feature_index, scenarios, step_pattern, stuttering_steps, total_stuttering_steps)
-        total_stuttering_steps = stuttering_analysis(feature_index, scenarios_outline, step_pattern, stuttering_steps, total_stuttering_steps)
-        total_stuttering_steps = stuttering_analysis(feature_index, examples, step_pattern, stuttering_steps, total_stuttering_steps)
+        total_stuttering_steps = stuttering_analysis(filename, backgrounds, step_pattern, stuttering_steps, total_stuttering_steps)
+        total_stuttering_steps = stuttering_analysis(filename, scenarios, step_pattern, stuttering_steps, total_stuttering_steps)
+        total_stuttering_steps = stuttering_analysis(filename, scenarios_outline, step_pattern, stuttering_steps, total_stuttering_steps)
+        total_stuttering_steps = stuttering_analysis(filename, examples, step_pattern, stuttering_steps, total_stuttering_steps)
 
     if stuttering_steps:
         # Transforming stuttering_step into a string
@@ -43,18 +47,32 @@ def find_stuttering_steps(feature_files):
             register["stuttering_step"] = ', '.join(register["stuttering_step"])
 
         report_data = [
-            [stuttering_step["feature"], stuttering_step["scenario_type_position"], stuttering_step["stuttering_step"], stuttering_step["register"]]
+            [stuttering_step["filename"], stuttering_step["scenario_type_position"], stuttering_step["stuttering_step"], stuttering_step["register"]]
             for stuttering_step in stuttering_steps
         ]
 
         print(f"- Total number of stuttering steps: {total_stuttering_steps}")
-        print(tabulate(report_data, headers=["Feature", "Position by Type", "Stuttering Step", "Reference"], tablefmt="grid"))
+        print(tabulate(report_data, headers=["Filename", "Position by Type", "Stuttering Step", "Reference"], tablefmt="grid"))
+
+        # Generate CSV if filename is provided
+        if csv_filename:
+            report_dir = './reports'
+            if not os.path.exists(report_dir):
+                os.mkdir(report_dir)
+
+            file_exists = os.path.isfile(csv_filename)  # Check if file already exists
+            with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
+                csv_writer = csv.writer(csvfile, delimiter=';')
+                if not file_exists:  # Write header only if the file is new
+                    csv_writer.writerow(["Filename", "Position by Type", "Stuttering Step", "Reference"])  # Write header
+                csv_writer.writerows(report_data)  # Write data
+            print(f"Report saved to {csv_filename}.")
     else:
         print("No registers with stuttering steps.")
 
 
 # Verifying into background or scenario if it has some stuttering step
-def stuttering_analysis(feature_index, registers, step_pattern, stuttering_steps, total_stuttering_steps):
+def stuttering_analysis(filename, registers, step_pattern, stuttering_steps, total_stuttering_steps):
     original_registers = registers.copy()
 
     for register_index, register in enumerate(registers):
@@ -68,7 +86,7 @@ def stuttering_analysis(feature_index, registers, step_pattern, stuttering_steps
         stuttering_counts = stuttering_counter(steps)
 
         # Organizing the result into a list
-        total_stuttering_steps = stuttering_steps_structure(feature_index, stuttering_counts, original_registers[register_index], register_index,
+        total_stuttering_steps = stuttering_steps_structure(filename, stuttering_counts, original_registers[register_index], register_index,
                                                             stuttering_steps, total_stuttering_steps)
     return total_stuttering_steps
 
@@ -81,7 +99,7 @@ def stuttering_counter(steps):
     return step_counts
 
 
-def stuttering_steps_structure(feature_index, stuttering_counts, register, scenario_index, stuttering_steps,
+def stuttering_steps_structure(filename, stuttering_counts, register, scenario_index, stuttering_steps,
                                total_stuttering_steps):
     stuttering_step = []
     for step, count in stuttering_counts.items():
@@ -91,7 +109,7 @@ def stuttering_steps_structure(feature_index, stuttering_counts, register, scena
 
     if stuttering_step:
         stuttering_steps.append({
-            "feature": feature_index + 1,
+            "filename": filename,
             "scenario_type_position": scenario_index + 1,
             "stuttering_step": stuttering_step,
             "register": register
@@ -133,4 +151,10 @@ feature_files_example = [
     """,
 ]
 
-# find_stuttering_steps(feature_files_example)
+filenames_example = [
+    "file1.feature",
+    "file2.feature",
+    "file3.feature"
+]
+
+# find_stuttering_steps(filenames_example, feature_files_example)

@@ -5,6 +5,7 @@ from untitled_feature import find_untitled_features
 from duplicate_scenario_title import find_duplicate_scenario_titles
 from duplicate_feature_title import find_duplicate_feature_titles
 from duplicate_scenario import find_duplicate_scenarios
+from vicious_tag import find_vicious_tags
 from stuttering_step import find_stuttering_steps
 from keyword_duplication import find_keyword_duplication
 
@@ -48,16 +49,22 @@ def execute_project(project):
     find_duplicate_scenarios([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_scenario.csv")
     finish_test()
 
+    # Vicious Tag
+    title("Vicious Tag", "blue")
+    start_test()
+    find_vicious_tags([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/vicious_tag.csv")
+    finish_test()
+
     # Stuttering Step
     title("Stuttering Step", "blue")
     start_test()
-    find_stuttering_steps(contents)
+    find_stuttering_steps([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/stuttering_step.csv")
     finish_test()
 
     # Keyword Duplication
     title("Keyword Duplication", "blue")
     start_test()
-    find_keyword_duplication(contents)
+    find_keyword_duplication([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/keyword_duplication.csv")
     finish_test()
 
 def execute_projects(projects):
