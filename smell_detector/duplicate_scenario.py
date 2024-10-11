@@ -20,24 +20,27 @@ def find_duplicate_scenarios(filenames, feature_files, csv_filename=None):
     
     # Process each feature file
     for index, (filename, text) in enumerate(zip(filenames, feature_files)):
-        # Use re.findall to capture "Scenario:" and the following text
-        scenarios = re.findall(r"(Scenario:[\s\S]*?|Example:[\s\S]*?|Scenario Outline:[\s\S]*?)(?=Scenario:|Example:|Scenario Outline:|$)", text)
-        scenarios = [s.strip() for s in scenarios if s.strip()]
-
-        # Count occurrences of each scenario
-        for scenario in scenarios:
-            scenario = scenario.strip()
+        lines = text.splitlines()
+        
+        # Use re.findall to capture "Scenario:", "Example:", and "Scenario Outline:"
+        scenarios = re.finditer(r"(Scenario:[\s\S]*?|Example:[\s\S]*?|Scenario Outline:[\s\S]*?)(?=Scenario:|Example:|Scenario Outline:|$)", text)
+        
+        for match in scenarios:
+            scenario = match.group(0).strip()
+            line_number = text.count('\n', 0, match.start(0)) + 1  # Calculate line number
+            
             if scenario not in scenario_count:
-                scenario_count[scenario] = {'count': 0, 'files': []}
+                scenario_count[scenario] = {'count': 0, 'files': [], 'lines': []}
             scenario_count[scenario]['count'] += 1
             if filename not in scenario_count[scenario]['files']:
                 scenario_count[scenario]['files'].append(filename)
+            scenario_count[scenario]['lines'].append(line_number)
 
     # Prepare data for reporting duplicates
     report_data = []
     for scenario, data in scenario_count.items():
         if data['count'] > 1:
-            report_data.append([scenario.splitlines()[0], data['count'], '\n'.join(data['files'])])
+            report_data.append([scenario.splitlines()[0], data['count'], '\n'.join(data['files']), ', '.join(map(str, data['lines']))])
 
     # Print overall report
     total_scenarios = sum(len(re.findall(r"(Scenario:[\s\S]*?)(?=Scenario:|$)", text)) for text in feature_files)
@@ -45,7 +48,7 @@ def find_duplicate_scenarios(filenames, feature_files, csv_filename=None):
     print(f"- Duplicate scenarios:")
     
     if report_data:
-        print(tabulate(report_data, headers=["Scenario Title", "Count", "Files"], tablefmt="pretty"))
+        print(tabulate(report_data, headers=["Scenario Title", "Count", "Files", "Line Numbers"], tablefmt="pretty"))
 
         # Generate CSV if filename is provided
         if csv_filename:
@@ -56,7 +59,7 @@ def find_duplicate_scenarios(filenames, feature_files, csv_filename=None):
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile)
                 if not file_exists:  # Write header only if the file is new
-                    csv_writer.writerow(["Scenario Title", "Count", "Files"])  # Write header
+                    csv_writer.writerow(["Scenario Title", "Count", "Files", "Line Numbers"])  # Write header
                 csv_writer.writerows(report_data)  # Write data
             print(f"Report saved to {csv_filename}.")
     else:
