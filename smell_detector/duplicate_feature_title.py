@@ -49,7 +49,7 @@ def analyze_features(features):
     for feature, files in distinct_features.items():
         count = len(files)
         if count > 1:
-            report_data.append([feature, count, ', '.join(files)])
+            report_data.append([feature, count, '\n'.join(files)])
     
     report_data.sort(key=lambda x: x[0])  # Sort by feature name
 

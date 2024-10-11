@@ -37,7 +37,7 @@ def find_duplicate_scenarios(filenames, feature_files, csv_filename=None):
     report_data = []
     for scenario, data in scenario_count.items():
         if data['count'] > 1:
-            report_data.append([scenario.splitlines()[0], data['count'], ', '.join(data['files'])])
+            report_data.append([scenario.splitlines()[0], data['count'], '\n'.join(data['files'])])
 
     # Print overall report
     total_scenarios = sum(len(re.findall(r"(Scenario:[\s\S]*?)(?=Scenario:|$)", text)) for text in feature_files)
