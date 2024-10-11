@@ -15,54 +15,48 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
     Returns:
     - None
     """
-    tag_pattern = r"(@\S+)(?=(?:\s*(@\S+|Rule:|Background:|Scenario:|Scenario Outline:|Example:|Examples:)))"
-    rule_pattern = r"(Rule:)"
-    scenarios_pattern = r"(Scenario:|Scenario Outline:|Example:)"
+    rule_tag_pattern = r"((?:@\w+\s*)+)(?=\s*Rule:)"
+    scenario_tag_pattern = r"((?:@\w+\s*)+)(?=\s*Scenario:)"
+    scenario_outline_tag_pattern = r"((?:@\w+\s*)+)(?=\s*Scenario Outline:)"
+    example_tag_pattern = r"((?:@\w+\s*)+)(?=\s*Example:)"
     # TODO: Implement for examples in the same Scenario Outline
-    examples_pattern = r"(Examples:)"
 
-    captured_tag = []
-
-    rules_tags = []
-    scenarios_tags = []
-    examples_tags = []
-
-    features_scenarios_tags = []
-    features_rules_tags = []
-    tag_counter = {}
-    final_results = []
+    vicious_tags = []
+    total_vicious_tags = 0
+    total_scenarios = 0
 
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find tags into feature
-        tags = re.findall(tag_pattern, feature_file)
+        rules = re.findall(rule_tag_pattern, feature_file)
+        scenarios = re.findall(scenario_tag_pattern, feature_file)
+        scenarios_outline = re.findall(scenario_outline_tag_pattern, feature_file)
+        examples = re.findall(example_tag_pattern, feature_file)
 
-        # Ordered tags into a list
-        list_tags(filename, captured_tag, examples_pattern, examples_tags, rule_pattern, rules_tags,
-                  scenarios_pattern, scenarios_tags, tags)
+        rules = [t.strip() for t in rules if t.strip()]
+        scenarios = [t.strip() for t in scenarios if t.strip()]
+        scenarios_outline = [t.strip() for t in scenarios_outline if t.strip()]
+        examples = [t.strip() for t in examples if t.strip()]
 
-        # Feature tags processed
-        features_rules_tags.append(rules_tags.copy())
-        features_scenarios_tags.append(scenarios_tags.copy())
-        rules_tags.clear()
-        scenarios_tags.clear()
+        # Calculating all scenarios into feature
+        total_scenarios = len(scenarios) + len(scenarios_outline) + len(examples)
 
-    # Counting tags in scenarios per feature
-    counting_tags(features_rules_tags, final_results, tag_counter)
-    counting_tags(features_scenarios_tags, final_results, tag_counter)
+        total_vicious_tags = vicious_analysis(filename, rules, vicious_tags, len(rules), total_vicious_tags, 'Rule')
+        total_vicious_tags = vicious_analysis(filename, scenarios, vicious_tags, total_scenarios, total_vicious_tags, 'Scenario')
+        total_vicious_tags = vicious_analysis(filename, scenarios_outline, vicious_tags, total_scenarios, total_vicious_tags, 'Scenario')
+        total_vicious_tags = vicious_analysis(filename, examples, vicious_tags, total_scenarios, total_vicious_tags, 'Scenario')
 
-    if final_results:
-        # Transforming tags into a string
+    if vicious_tags:
+        # Transforming vicious_tags into a string
+        for register in vicious_tags:
+            register["vicious_tag"] = ', '.join(register["vicious_tag"])
+
         report_data = [
-            [final_result["Filename"], ", ".join(tag for tag in final_result if tag.startswith('@')), final_result["Type"], final_result["Type Counts"]]
-            for final_result in final_results
+            [vicious_tag["filename"], vicious_tag["vicious_tag"], vicious_tag["scenarios"], vicious_tag["type"]]
+            for vicious_tag in vicious_tags
         ]
 
-        # Counting vicious tags
-        total_vicious_tags = sum(1 for final_result in final_results for tag in final_result if tag.startswith('@'))
-
-        print(f'- Total number of features with vicious tags: {len(final_results)}')
-        print(f'- Total number of vicious tags: {total_vicious_tags}')
-        print(tabulate(report_data, headers=["Filename", "Tags", "Type", "Type Counts"], tablefmt="pretty"))
+        print(f"- Total number of vicious tags: {total_vicious_tags}")
+        print(tabulate(report_data, headers=["Filename", "Vicious Tag", "Scenarios", "Type"], tablefmt="grid"))
 
         # Generate CSV if filename is provided
         if csv_filename:
@@ -74,75 +68,71 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile, delimiter=';')
                 if not file_exists:  # Write header only if the file is new
-                    csv_writer.writerow(["Filename", "Tags", "Type", "Type Counts"])  # Write header
+                    csv_writer.writerow(["Filename", "Vicious Tags", "Scenarios", "Type"])  # Write header
                 csv_writer.writerows(report_data)  # Write data
             print(f"Report saved to {csv_filename}.")
     else:
         print("No registers with vicious tags.")
 
 
-def list_tags(filename, captured_tag, examples_pattern, examples_tags, rule_pattern, rules_tags, scenarios_pattern,
-              scenarios_tags, tags):
-    for pair_tag_index, pair_tag in enumerate(tags):
-        for tag in pair_tag:
-            if tag not in captured_tag:
-                captured_tag.append(tag)
+def vicious_analysis(filename, registers, vicious_tags, total_scenarios, total_vicious_tags, type):
+    tags_scenarios_feature = []
 
-        # Tags organization
-        tags_organization(filename, captured_tag, pair_tag, rule_pattern, rules_tags)
-        tags_organization(filename, captured_tag, pair_tag, scenarios_pattern, scenarios_tags)
-        tags_organization(filename, captured_tag, pair_tag, examples_pattern, examples_tags)
+    for register_index, register in enumerate(registers):
+        register = register.strip()
+        tags = re.findall(r'@\w+', register)
 
+        tags_scenarios_feature.append(tags)
 
-def tags_organization(filename, captured_tag, pair_tag, pattern, tags):
-    if re.search(pattern, pair_tag[1]) is not None:
-        captured_tag.append(filename)
-        tags.append(captured_tag.copy())
-        captured_tag.clear()
+    vicious_counts = vicious_counter(tags_scenarios_feature)
+
+    total_vicious_tags = vicious_structure(filename, vicious_counts, tags_scenarios_feature,
+                                           vicious_tags, total_scenarios, total_vicious_tags, type)
+    return total_vicious_tags
 
 
-def counting_tags(features_keywords_tags, final_results, tag_counter):
-    for feature_index, feature_keywords_tags in enumerate(features_keywords_tags):
-        # Tag Counting
-        for scenario_tag in feature_keywords_tags:
-            for tag in scenario_tag[:-2]:
-                tag = tag.strip()
-                tag_counter[tag] = tag_counter.get(tag, 0) + 1
+def vicious_counter(tags_scenarios_feature):
+    tag_counts = {}
+    for tags_scenario in tags_scenarios_feature:
+        for tag in tags_scenario:
+            tag_counts[tag] = tag_counts.get(tag, 0) + 1
+    return tag_counts
 
-        # Tag verification
-        tag_counter_aux = tag_counter.copy()
-        for tag, count in tag_counter_aux.items():
-            if count < len(features_keywords_tags):
-                tag_counter.pop(tag)
 
-        if tag_counter != {}:
-            tag_counter["Filename"] = feature_keywords_tags[feature_index][-1]
-            tag_counter["Type"] = feature_keywords_tags[feature_index][-2][:-1]
-            tag_counter["Type Counts"] = len(feature_keywords_tags)
-            final_results.append(tag_counter.copy())
-            tag_counter.clear()
+def vicious_structure(filename, vicious_counts, tags_scenarios_feature, vicious_tags, total_scenarios, total_vicious_tags, type):
+    vicious_tag = []
+    for tag, count in vicious_counts.items():
+        if count >= total_scenarios > 1:
+            vicious_tag.append(f"'{tag}' appears {count} times")
+            total_vicious_tags += count
+
+    if vicious_tag:
+        vicious_tags.append({
+            "filename": filename,
+            "vicious_tag": vicious_tag,
+            "scenarios": total_scenarios,
+            "type": type
+        })
+    return total_vicious_tags
+
 
 # Example usage
 feature_files_example = [
     """
     Feature: Example feature 1
     
-        @viciousTag1
-        Rule: Some random rule
+        @viciousTag0
+        Rule: Test Rule
         
         @viciousTag1 @viciousTag2 @viciousTag3
         Scenario: First scenario
             Given step 1 @notTag1 @notTag1
-            And step 2
             And step 2
             When step 3
             @notTag2
             And step 4
             Then step 5
             And step 6
-        
-        @viciousTag1
-        Rule: Another random rule
             
         @viciousTag4 @viciousTag2
         @viciousTag5 @viciousTag1
@@ -158,7 +148,6 @@ feature_files_example = [
         @viciousTag1
         Scenario: First scenario
             Given step 1 @notTag1
-            And step 2
             And step 2
             When step 3
             @notTag2

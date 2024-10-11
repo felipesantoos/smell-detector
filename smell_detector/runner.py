@@ -1,10 +1,11 @@
 import read_file
 import os
-from utils import title, start_test, finish_test, feature_glossary
+from utils import title, start_test, finish_test
 from untitled_feature import find_untitled_features
 from duplicate_scenario_title import find_duplicate_scenario_titles
 from duplicate_feature_title import find_duplicate_feature_titles
 from duplicate_scenario import find_duplicate_scenarios
+from absence_background import find_absence_background
 from vicious_tag import find_vicious_tags
 from stuttering_step import find_stuttering_steps
 from keyword_duplication import find_keyword_duplication
@@ -15,9 +16,6 @@ def execute_project(project):
     # Catch all features in a specific project
     path = f"{feature_files_dir}{project}/"
     project_features = os.listdir(path)
-
-    # Feature glossary
-    feature_glossary(project, project_features)
 
     # filenames structuration and contents construction
     filenames = []
@@ -47,6 +45,12 @@ def execute_project(project):
     title("Duplicate Scenario", "blue")
     start_test()
     find_duplicate_scenarios([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_scenario.csv")
+    finish_test()
+
+    # Absence of Background
+    title("Absence of Background", "blue")
+    start_test()
+    find_absence_background([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/absence_background.csv")
     finish_test()
 
     # Vicious Tag
