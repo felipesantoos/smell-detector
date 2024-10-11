@@ -52,14 +52,3 @@ def finish_test():
     print(f"{colors.BRed}+----------------+{colors.Color_Off}")
     print(f"{colors.BRed}| FINISHING TEST |{colors.Color_Off}")
     print(f"{colors.BRed}+----------------+{colors.Color_Off}")
-
-def feature_glossary(project, project_features):
-    title(f"{project} Feature Glossary", "yellow")
-    if project_features:
-        glossary = [
-            [i + 1, item]
-            for i, item in enumerate(project_features)
-        ]
-        print(tabulate(glossary, headers=["Index", "Feature"], tablefmt="pretty"))
-    else:
-        print("No features appeared.")
