@@ -31,8 +31,6 @@ def find_duplicate_scenario_titles(filenames, feature_files, csv_filename=None):
         total_distinct_scenarios += len(distinct_values)
         number_of_occurrences_of_this_smell_in_this_file = 0
 
-        print(matches)
-
         # Prepare data for tabulation
         report_data = []
         for value in distinct_values:
