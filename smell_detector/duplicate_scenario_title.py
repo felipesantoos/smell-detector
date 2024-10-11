@@ -40,7 +40,7 @@ def find_duplicate_scenario_titles(filenames, feature_files, csv_filename=None):
             if number_of_times_the_value_appeared > 1:
                 # Get indexes of the value in the matches
                 scenario_indexes = [i + 1 for i, match in enumerate(matches) if match == value]
-                scenario_lines = [i + 1 for i, line in enumerate(feature_file.splitlines()) if value in line]
+                scenario_lines = [i + 1 for i, line in enumerate(feature_file.splitlines()) if line.strip() == value]
                 report_data.append([filename, value, number_of_times_the_value_appeared, scenario_indexes, scenario_lines])
                 number_of_occurrences_of_this_smell_in_this_file += 1
 
