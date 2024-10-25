@@ -11,9 +11,7 @@ projects = [
     "serverlessworkflow_specification",
     "thoughtbot_factory_bot_rails",
     "RUN ALL PROJECTS",
-    "individual_sample",
-    "compose_sample",
-    "RUN ALL SAMPLES",
+    "sample",
     "EXIT"
 ]
 
@@ -31,15 +29,11 @@ try:
     choice = int(input("Choice: "))
     choice -= 1
 
-    if -1 < choice < 7:
+    if -1 < choice < 7 or choice == 8:
         runner.execute_project(projects[choice])
     elif choice == 7:
-        runner.execute_projects(projects[:-5])
-    elif 7 < choice < 10:
-        runner.execute_project(projects[choice])
-    elif choice == 10:
-        runner.execute_projects(projects[8:-2])
-    elif choice == 11:
+        runner.execute_projects(projects[:-3])
+    elif choice == 9:
         print("goodbye...")
     else:
         print("choice doesn't exist")
