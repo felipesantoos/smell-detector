@@ -8,7 +8,7 @@ from duplicate_scenario import find_duplicate_scenarios
 from absence_background import find_absence_background
 from vicious_tag import find_vicious_tags
 from stuttering_step import find_stuttering_steps
-from keyword_duplication import find_keyword_duplication
+from malformed_test import find_malformed_test
 
 feature_files_dir = "../"
 
@@ -65,10 +65,10 @@ def execute_project(project):
     find_stuttering_steps([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/stuttering_step.csv")
     finish_test()
 
-    # Keyword Duplication
-    title("Keyword Duplication", "blue")
+    # Malformed Test
+    title("Malformed Test", "blue")
     start_test()
-    find_keyword_duplication([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/keyword_duplication.csv")
+    find_malformed_test([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/malformed_test.csv")
     finish_test()
 
 def execute_projects(projects):

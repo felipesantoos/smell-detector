@@ -48,7 +48,7 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
     if vicious_tags:
         # Transforming vicious_tags into a string
         for register in vicious_tags:
-            register["vicious_tag"] = ', '.join(register["vicious_tag"])
+            register["vicious_tag"] = '\n'.join(register["vicious_tag"])
 
         report_data = [
             [vicious_tag["filename"], vicious_tag["vicious_tag"], vicious_tag["scenarios"], vicious_tag["type"]]

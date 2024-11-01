@@ -44,7 +44,7 @@ def find_stuttering_steps(feature_filenames, feature_files, csv_filename=None):
     if stuttering_steps:
         # Transforming stuttering_step into a string
         for register in stuttering_steps:
-            register["stuttering_step"] = ', '.join(register["stuttering_step"])
+            register["stuttering_step"] = '\n'.join(register["stuttering_step"])
 
         report_data = [
             [stuttering_step["filename"], stuttering_step["scenario_type_position"], stuttering_step["stuttering_step"], stuttering_step["register"]]

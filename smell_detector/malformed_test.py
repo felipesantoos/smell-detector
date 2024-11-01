@@ -3,9 +3,9 @@ import os
 import re
 from tabulate import tabulate
 
-def find_keyword_duplication(feature_filenames, feature_files, csv_filename=None):
+def find_malformed_test(feature_filenames, feature_files, csv_filename=None):
     """
-    Finds all the keyword duplications in the feature file.
+    Finds all the malformed tests in the feature file.
 
     Args:
     - feature_filenames (list of str): The names of the feature files.
@@ -21,8 +21,8 @@ def find_keyword_duplication(feature_filenames, feature_files, csv_filename=None
     example_pattern = r"(Example:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
     step_pattern = r"(Given.*|When.*|Then.*)"
 
-    duplicated_registers = []
-    total_duplicated_keywords = 0
+    malformed_registers = []
+    total_malformed_tests = 0
 
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find background or scenarios into feature
@@ -36,23 +36,23 @@ def find_keyword_duplication(feature_filenames, feature_files, csv_filename=None
         scenarios_outline = [so.strip() for so in scenarios_outline if so.strip()]
         examples = [e.strip() for e in examples if e.strip()]
 
-        total_duplicated_keywords = duplicated_analysis(filename, backgrounds, step_pattern, duplicated_registers, total_duplicated_keywords)
-        total_duplicated_keywords = duplicated_analysis(filename, scenarios, step_pattern, duplicated_registers, total_duplicated_keywords)
-        total_duplicated_keywords = duplicated_analysis(filename, scenarios_outline, step_pattern, duplicated_registers, total_duplicated_keywords)
-        total_duplicated_keywords = duplicated_analysis(filename, examples, step_pattern, duplicated_registers, total_duplicated_keywords)
+        total_malformed_tests = malformed_analysis(filename, backgrounds, step_pattern, malformed_registers, total_malformed_tests)
+        total_malformed_tests = malformed_analysis(filename, scenarios, step_pattern, malformed_registers, total_malformed_tests)
+        total_malformed_tests = malformed_analysis(filename, scenarios_outline, step_pattern, malformed_registers, total_malformed_tests)
+        total_malformed_tests = malformed_analysis(filename, examples, step_pattern, malformed_registers, total_malformed_tests)
 
-    if duplicated_registers:
-        # Transforming duplicated_keywords into a string
-        for register in duplicated_registers:
-            register["duplicated_keywords"] = ', '.join(register["duplicated_keywords"])
+    if malformed_registers:
+        # Transforming malformed_tests into a string
+        for register in malformed_registers:
+            register["justification"] = '\n'.join(register["justification"])
 
         report_data = [
-            [duplicated_register["filename"], duplicated_register["scenario_type_position"], duplicated_register["duplicated_keywords"], duplicated_register["register"]]
-            for duplicated_register in duplicated_registers
+            [malformed_register["filename"], malformed_register["scenario_type_position"], malformed_register["justification"], malformed_register["register"]]
+            for malformed_register in malformed_registers
         ]
 
-        print(f"- Total number of duplicated keywords: {total_duplicated_keywords}")
-        print(tabulate(report_data, headers=["Filename", "Position by Type", "Duplicated Keyword", "Reference"], tablefmt="grid"))
+        print(f"- Total number of malformed tests by occurrence: {total_malformed_tests}")
+        print(tabulate(report_data, headers=["Filename", "Position by Type", "Justification", "Reference"], tablefmt="grid"))
 
         # Generate CSV if filename is provided
         if csv_filename:
@@ -64,15 +64,15 @@ def find_keyword_duplication(feature_filenames, feature_files, csv_filename=None
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile, delimiter=';')
                 if not file_exists:  # Write header only if the file is new
-                    csv_writer.writerow(["Filename", "Position by Type", "Duplicated Keyword", "Reference"])  # Write header
+                    csv_writer.writerow(["Filename", "Position by Type", "Justification", "Reference"])  # Write header
                 csv_writer.writerows(report_data)  # Write data
             print(f"Report saved to {csv_filename}.")
     else:
-        print("No registers with duplicated keywords.")
+        print("No registers with malformed tests.")
 
 
-# Verifying into background or scenario if it has some duplicated keyword
-def duplicated_analysis(filename, registers, step_pattern, duplicated_registers, total_duplicated_keywords):
+# Verifying into background or scenario if it has some malformed test
+def malformed_analysis(filename, registers, step_pattern, malformed_registers, total_malformed_tests):
     original_registers = registers.copy()
 
     for register_index, register in enumerate(registers):
@@ -82,16 +82,16 @@ def duplicated_analysis(filename, registers, step_pattern, duplicated_registers,
         register = register.strip()
         steps = re.findall(step_pattern, register)
 
-        # Counting keywords duplication
-        keyword_counts = duplicated_keywords_counter(steps)
+        # Counting malformed test
+        keyword_counts = malformed_tests_counter(steps)
 
         # Organizing the result into a list
-        total_duplicated_keywords = duplicated_keywords_structure(filename, keyword_counts, original_registers[register_index], register_index,
-                                                            duplicated_registers, total_duplicated_keywords)
-    return total_duplicated_keywords
+        total_malformed_tests = malformed_tests_structure(filename, keyword_counts, original_registers[register_index], register_index,
+                                                                  malformed_registers, total_malformed_tests)
+    return total_malformed_tests
 
 
-def duplicated_keywords_counter(steps):
+def malformed_tests_counter(steps):
     keyword_counts = {"Given": 0, "When": 0, "Then": 0}
     for step in steps:
         if step.startswith("Given"):
@@ -103,22 +103,25 @@ def duplicated_keywords_counter(steps):
     return keyword_counts
 
 
-def duplicated_keywords_structure(filename, keyword_counts, register, scenario_index, duplicated_registers,
-                               total_duplicated_keywords):
-    duplicated_keywords = []
+def malformed_tests_structure(filename, keyword_counts, register, scenario_index, malformed_registers,
+                              total_malformed_tests):
+    malformed_keywords = []
     for keyword, count in keyword_counts.items():
         if count > 1:
-            duplicated_keywords.append(f"{keyword} appears {count} times")
-            total_duplicated_keywords += count
+            malformed_keywords.append(f"{keyword} appears {count} times")
+            total_malformed_tests += count
+        if count == 0 and keyword != "Given" and not register.startswith("Background:"):
+            malformed_keywords.append(f"{keyword} appears zero times")
+            total_malformed_tests += 1
 
-    if duplicated_keywords:
-        duplicated_registers.append({
+    if malformed_keywords:
+        malformed_registers.append({
             "filename": filename,
             "scenario_type_position": scenario_index + 1,
-            "duplicated_keywords": duplicated_keywords,
+            "justification": malformed_keywords,
             "register": register
         })
-    return total_duplicated_keywords
+    return total_malformed_tests
 
 # Example usage
 feature_files_example = [
@@ -152,12 +155,24 @@ feature_files_example = [
             Then step 5
             Then step 6
     """,
+    """
+    Feature: Example feature 4
+        Scenario: First scenario
+            Given step 1
+            
+        Scenario: Second scenario
+            Given step 1
+            When step 2
+        
+        Scenario: Third scenario
+    """,
 ]
 
 filenames_example = [
     "file1.feature",
     "file2.feature",
-    "file3.feature"
+    "file3.feature",
+    "file4.feature"
 ]
 
-# find_keyword_duplication(filenames_example, feature_files_example)
+# find_malformed_test(filenames_example, feature_files_example)

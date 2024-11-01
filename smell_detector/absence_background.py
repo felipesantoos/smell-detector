@@ -48,7 +48,7 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
     if absences_backgrounds:
         # Transforming absences_backgrounds into a string
         for register in absences_backgrounds:
-            register["absence_background"] = ', '.join(register["absence_background"])
+            register["absence_background"] = '\n'.join(register["absence_background"])
 
         report_data = [
             [absence_background["filename"], absence_background["absence_background"], absence_background["scenarios"]]
