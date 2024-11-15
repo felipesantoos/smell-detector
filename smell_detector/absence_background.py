@@ -99,18 +99,20 @@ def absence_analysis(filename, registers, step_pattern, partition_pattern, absen
 
 
 def absence_counter(steps_scenarios_feature):
-    step_counts = {}
+    step_block_counts = {}
     for steps_scenario in steps_scenarios_feature:
-        for step in steps_scenario:
-            step_counts[step] = step_counts.get(step, 0) + 1
-    return step_counts
+        steps_tuple = tuple(steps_scenario)
+        step_block_counts[steps_tuple] = step_block_counts.get(steps_tuple, 0) + 1
+
+    return step_block_counts
 
 
 def absence_structure(filename, absence_counts, steps_scenarios_feature, absences_backgrounds, total_scenarios, total_absence_backgrounds):
     absence_background = []
     for step, count in absence_counts.items():
         if count >= total_scenarios > 1:
-            absence_background.append(f"'{step}' appears {count} times")
+            formatted_step = "\n ".join(line.strip() for line in step)
+            absence_background.append(f"'{formatted_step}' appears {count} times")
             total_absence_backgrounds += count
 
     if absence_background:
@@ -130,31 +132,39 @@ feature_files_example = [
         Scenario: First scenario
             Given step 1
             And step 2
+            \"\"\"
+            test
+            \"\"\"
             When step 3
             And step 4
             Then step 5
             And step 6
             
         Scenario: Second scenario
-            Given step 1
-            When step 2
-            Then step 3
-    """,
-    """
-    Feature: Example feature 2
-
-        Scenario: First scenario
             Given step 1
             And step 2
+            \"\"\"
+            test
+            \"\"\"
             When step 3
-            And step 4
-            Then step 5
-            And step 6
-            
-        Scenario: Second scenario
-            Given step 1
-            When step 2
-            Then step 3
+            Then step 4
+    """,
+    """
+Feature: Example feature 2
+
+    Scenario: First scenario
+        Given step 1
+        And step 2
+        When step 3
+        And step 4
+        Then step 5
+        And step 6
+        
+    Scenario: Second scenario
+        Given step 1
+        And step 2
+        When step 3
+        Then step 4
     """,
 ]
 
