@@ -46,7 +46,7 @@ def find_duplicate_test_cases(filenames, feature_files, csv_filename=None):
     print(f"- Duplicate test cases:")
     
     if report_data:
-        print(tabulate(report_data, headers=["Scenario Title", "Count", "Files And Line Numbers"], tablefmt="pretty"))
+        print(tabulate(report_data, headers=["Scenario Title", "Count", "Files And Line Numbers"], tablefmt="grid"))
 
         # Generate CSV if filename is provided
         if csv_filename:
@@ -311,4 +311,4 @@ def run_example():
     # Specify the CSV filename where the report should be saved
     find_duplicate_test_cases(filenames_example, feature_files_example, "reports/duplicate_test_case.csv")
 
-# run_example()
+run_example()
