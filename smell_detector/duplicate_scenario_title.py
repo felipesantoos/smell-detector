@@ -174,4 +174,4 @@ def run_example():
 
     find_duplicate_scenario_titles(filenames_example, feature_files_example, "reports/duplicate_scenario_title.csv")
 
-run_example()
+# run_example()
