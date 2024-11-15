@@ -311,4 +311,4 @@ def run_example():
     # Specify the CSV filename where the report should be saved
     find_duplicate_test_cases(filenames_example, feature_files_example, "reports/duplicate_test_case.csv")
 
-run_example()
+# run_example()
