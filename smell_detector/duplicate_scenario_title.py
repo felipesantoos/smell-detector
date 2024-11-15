@@ -5,77 +5,65 @@ from tabulate import tabulate
 
 def find_duplicate_scenario_titles(filenames, feature_files, csv_filename=None):
     """
-    Finds duplicate scenario titles in a list of feature files. A duplicate title scenario is defined 
-    as a scenario that appears more than once.
-    
+    Finds duplicate scenario titles in a list of feature files, ignoring prefixes like "Scenario:", "Example:", 
+    and "Scenario Outline:" when comparing titles. It also sorts the locations alphabetically.
+
     Args:
     - filenames (list of str): The names of the feature files.
     - feature_files (list of str): The content of the feature files.
-    - csv_filename (str, optional): Name of the CSV file to save the report.
-    
+    - csv_filename (str, optional): The name of the CSV file to save the report.
+
     Returns:
     - None
     """
-    all_report_data = []
-    total_scenarios = 0
-    total_distinct_scenarios = 0
-    total_occurrences = 0
+    title_count = {}
 
-    for index, (filename, feature_file) in enumerate(zip(filenames, feature_files)):
-        # Find all scenarios in the current feature file
-        pattern = r"Scenario:.*|Example:.*|Scenario Outline:.*"
-        matches = re.findall(pattern, feature_file)
+    # Process each feature file
+    for filename, text in zip(filenames, feature_files):
+        lines = text.splitlines()
+        for idx, line in enumerate(lines, start=1):  # Enumerate lines with 1-based index
+            # Match Scenario, Example, and Scenario Outline titles
+            match = re.match(r"^\s*(Scenario:|Example:|Scenario Outline:)\s*(.+)$", line)
+            if match:
+                _, title_name = match.groups()  # Extract the title part after the colon
+                normalized_title = title_name.strip()  # Normalize by trimming whitespace
 
-        total_scenarios += len(matches)
-        distinct_values = list(set(matches))
-        total_distinct_scenarios += len(distinct_values)
-        number_of_occurrences_of_this_smell_in_this_file = 0
+                if normalized_title not in title_count:
+                    title_count[normalized_title] = {'count': 0, 'locations': []}
+                title_count[normalized_title]['count'] += 1
+                title_count[normalized_title]['locations'].append(f"{filename}:{idx}")
 
-        # Prepare data for tabulation
-        report_data = []
-        for value in distinct_values:
-            number_of_times_the_value_appeared = matches.count(value)
-            if number_of_times_the_value_appeared > 1:
-                # Get indexes of the value in the matches
-                scenario_indexes = [i + 1 for i, match in enumerate(matches) if match == value]
-                scenario_lines = [i + 1 for i, line in enumerate(feature_file.splitlines()) if line.strip() == value]
-                report_data.append([filename, value, number_of_times_the_value_appeared, scenario_indexes, scenario_lines])
-                number_of_occurrences_of_this_smell_in_this_file += 1
-
-        # Sort the report data by scenario name
-        report_data.sort(key=lambda x: x[1])  # Sort by scenario name
-
-        # Store the report data for the current feature file
-        if report_data:
-            all_report_data.extend(report_data)
-
-        total_occurrences += number_of_occurrences_of_this_smell_in_this_file
+    # Prepare data for reporting duplicates
+    report_data = []
+    for title, data in title_count.items():
+        if data['count'] > 1:
+            # Sort the locations alphabetically
+            sorted_locations = sorted(set(data['locations']))
+            report_data.append([title, data['count'], '\n'.join(sorted_locations)])
 
     # Print overall report
-    print(f"- Total number of scenarios across all files: {total_scenarios}")
-    print(f"- Total number of distinct scenarios across all files: {total_distinct_scenarios}")
-    print("- Scenarios that appeared more than once:")
-    
-    if all_report_data:
-        indexed_report_data = [[item[0], item[1], item[2], ', '.join(map(str, item[3])), ', '.join(map(str, item[4]))] for item in all_report_data]
-        print(tabulate(indexed_report_data, headers=["Feature File", "Scenario", "Count", "Indexes", "Lines"], tablefmt="pretty"))
-        
+    total_titles = sum(
+        len(re.findall(r"^\s*(Scenario:|Example:|Scenario Outline:)", text, re.MULTILINE))
+        for text in feature_files
+    )
+    print(f"- Total number of scenario titles: {total_titles}")
+    print(f"- Duplicate scenario titles:")
+
+    if report_data:
+        print(tabulate(report_data, headers=["Title", "Count", "Files And Line Numbers"], tablefmt="grid"))
+
         # Generate CSV if filename is provided
         if csv_filename:
-            report_dir = './reports'
-            if not os.path.exists(report_dir):
-                os.mkdir(report_dir)
-            file_exists = os.path.isfile(csv_filename)  # Check if file already exists
-            with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
+            report_dir = os.path.dirname(csv_filename)
+            if report_dir and not os.path.exists(report_dir):
+                os.makedirs(report_dir)
+            with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile)
-                if not file_exists:  # Write header only if the file is new
-                    csv_writer.writerow(["Feature File", "Scenario", "Count", "Indexes", "Lines"])  # Write header
-                csv_writer.writerows(indexed_report_data)  # Write data
+                csv_writer.writerow(["Title", "Count", "Files And Line Numbers"])  # Write header
+                csv_writer.writerows(report_data)  # Write data
             print(f"Report saved to {csv_filename}.")
     else:
-        print("No scenarios appeared more than once.")
-
-    print(f"- Total number of occurrences of this smell across all files: {total_occurrences}")
+        print("No scenario titles appeared more than once.")
 
 # Example usage
 def run_example():
@@ -172,6 +160,7 @@ def run_example():
         "file12.feature"
     ]
 
+    # Specify the CSV filename where the report should be saved
     find_duplicate_scenario_titles(filenames_example, feature_files_example, "reports/duplicate_scenario_title.csv")
 
-# run_example()
+run_example()
