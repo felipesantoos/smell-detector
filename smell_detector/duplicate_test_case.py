@@ -3,52 +3,50 @@ import csv
 import os
 from tabulate import tabulate
 
-def find_duplicate_scenarios(filenames, feature_files, csv_filename=None):
+def find_duplicate_test_cases(filenames, feature_files, csv_filename=None):
     """
-    Finds duplicate scenarios in a list of feature files. A duplicate scenario is defined 
-    as a scenario that appears more than once.
-    
+    Finds duplicate test cases in a list of feature files. A duplicate test case is defined 
+    as a test case that appears more than once.
+
     Args:
     - filenames (list of str): The names of the feature files.
     - feature_files (list of str): The content of the feature files.
     - csv_filename (str, optional): The name of the CSV file to save the report.
-    
+
     Returns:
     - None
     """
-    scenario_count = {}
+    test_case_count = {}
     
     # Process each feature file
     for index, (filename, text) in enumerate(zip(filenames, feature_files)):
         lines = text.splitlines()
         
         # Use re.findall to capture "Scenario:", "Example:", and "Scenario Outline:"
-        scenarios = re.finditer(r"(Scenario:[\s\S]*?|Example:[\s\S]*?|Scenario Outline:[\s\S]*?)(?=Scenario:|Example:|Scenario Outline:|$)", text)
+        test_cases = re.finditer(r"(Scenario:[\s\S]*?|Example:[\s\S]*?|Scenario Outline:[\s\S]*?)(?=Scenario:|Example:|Scenario Outline:|$)", text)
         
-        for match in scenarios:
-            scenario = match.group(0).strip()
+        for match in test_cases:
+            test_case = match.group(0).strip()
             line_number = text.count('\n', 0, match.start(0)) + 1  # Calculate line number
             
-            if scenario not in scenario_count:
-                scenario_count[scenario] = {'count': 0, 'files': [], 'lines': []}
-            scenario_count[scenario]['count'] += 1
-            if filename not in scenario_count[scenario]['files']:
-                scenario_count[scenario]['files'].append(filename)
-            scenario_count[scenario]['lines'].append(line_number)
+            if test_case not in test_case_count:
+                test_case_count[test_case] = {'count': 0, 'files_and_lines': []}
+            test_case_count[test_case]['count'] += 1
+            test_case_count[test_case]['files_and_lines'].append(f"{filename}:{line_number}")
 
     # Prepare data for reporting duplicates
     report_data = []
-    for scenario, data in scenario_count.items():
+    for test_case, data in test_case_count.items():
         if data['count'] > 1:
-            report_data.append([scenario.splitlines()[0], data['count'], '\n'.join(data['files']), ', '.join(map(str, data['lines']))])
+            report_data.append([test_case.splitlines()[0], data['count'], '\n'.join(data['files_and_lines'])])
 
     # Print overall report
-    total_scenarios = sum(len(re.findall(r"(Scenario:[\s\S]*?)(?=Scenario:|$)", text)) for text in feature_files)
-    print(f"- Total number of scenarios: {total_scenarios}")
-    print(f"- Duplicate scenarios:")
+    total_test_cases = sum(len(re.findall(r"(Scenario:[\s\S]*?)(?=Scenario:|$)", text)) for text in feature_files)
+    print(f"- Total number of test cases: {total_test_cases}")
+    print(f"- Duplicate test cases:")
     
     if report_data:
-        print(tabulate(report_data, headers=["Scenario Title", "Count", "Files", "Line Numbers"], tablefmt="pretty"))
+        print(tabulate(report_data, headers=["Scenario Title", "Count", "Files And Line Numbers"], tablefmt="pretty"))
 
         # Generate CSV if filename is provided
         if csv_filename:
@@ -59,11 +57,11 @@ def find_duplicate_scenarios(filenames, feature_files, csv_filename=None):
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile)
                 if not file_exists:  # Write header only if the file is new
-                    csv_writer.writerow(["Scenario Title", "Count", "Files", "Line Numbers"])  # Write header
+                    csv_writer.writerow(["Scenario Title", "Count", "Files And Line Numbers"])  # Write header
                 csv_writer.writerows(report_data)  # Write data
             print(f"Report saved to {csv_filename}.")
     else:
-        print("No scenarios appeared more than once.")
+        print("No test cases appeared more than once.")
 
 # Example usage
 def run_example():
@@ -311,6 +309,6 @@ def run_example():
     ]
 
     # Specify the CSV filename where the report should be saved
-    find_duplicate_scenarios(filenames_example, feature_files_example, "reports/duplicate_scenario.csv")
+    find_duplicate_test_cases(filenames_example, feature_files_example, "reports/duplicate_test_case.csv")
 
-# run_example()
+run_example()

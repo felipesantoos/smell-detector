@@ -4,7 +4,7 @@ from utils import title, start_test, finish_test
 from untitled_feature import find_untitled_features
 from duplicate_scenario_title import find_duplicate_scenario_titles
 from duplicate_feature_title import find_duplicate_feature_titles
-from duplicate_scenario import find_duplicate_scenarios
+from duplicate_test_case import find_duplicate_test_cases
 from absence_background import find_absence_background
 from vicious_tag import find_vicious_tags
 from stuttering_step import find_stuttering_steps
@@ -44,7 +44,7 @@ def execute_project(project):
     # Duplicate Scenario
     title("Duplicate Scenario", "blue")
     start_test()
-    find_duplicate_scenarios([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_scenario.csv")
+    find_duplicate_test_cases([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_test_case.csv")
     finish_test()
 
     # Absence of Background
