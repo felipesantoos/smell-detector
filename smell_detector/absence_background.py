@@ -91,48 +91,42 @@ def absence_analysis(filename, registers, step_pattern, partition_pattern, absen
 
             steps_scenarios_feature.append(steps_scenario)
 
-    absence_counts, given_counts = absence_counter(steps_scenarios_feature)
+    absence_counts = absence_counter(steps_scenarios_feature)
 
-    total_absence_backgrounds = absence_structure(filename, absence_counts, given_counts, absences_backgrounds,
+    total_absence_backgrounds = absence_structure(filename, absence_counts, absences_backgrounds,
                                                   total_scenarios, total_absence_backgrounds)
     return total_absence_backgrounds
 
 
 def absence_counter(steps_scenarios_feature):
-    step_block_counts = {}
-    given_counts = {}
-    for steps_scenario in steps_scenarios_feature:
-        # Inserting all block
-        steps_tuple = tuple(steps_scenario)
-        step_block_counts[steps_tuple] = step_block_counts.get(steps_tuple, 0) + 1
+    # Using the biggest scenario to increment
+    biggest_scenario = max(steps_scenarios_feature, key=len, default=[])
 
-        # Inserting by Given
-        given_counts[steps_scenario[0]] = given_counts.get(steps_scenario[0], 0) + 1
+    # Going through the list by largest size and reducing loops
+    step_counts = {}
+    for size in range(len(biggest_scenario), 0, -1):
+        # Counting occurrences
+        step_counts.clear()
+        for steps_scenario in steps_scenarios_feature:
+            key = tuple(steps_scenario[:size])
+            if key in step_counts:
+                step_counts[key] += 1
+            else:
+                step_counts[key] = 1
 
-    return step_block_counts, given_counts
+        # Checking if step_counts meets criteria
+        if max(step_counts.values(), default=0) >= len(steps_scenarios_feature):
+            return step_counts
+
+    return step_counts
 
 
-def absence_structure(filename, absence_counts, given_counts, absences_backgrounds, total_scenarios, total_absence_backgrounds):
-    filtered_given_counts = {
-        given_step: given_count
-        for given_step, given_count in given_counts.items()
-        if any(
-            step == given_step and given_count != absence_count
-            for absence_steps, absence_count in absence_counts.items()
-            for step in absence_steps
-        )
-    }
-
+def absence_structure(filename, absence_counts, absences_backgrounds, total_scenarios, total_absence_backgrounds):
     absence_background = []
     for step, count in absence_counts.items():
         if count >= total_scenarios > 1:
             formatted_step = "\n ".join(line.strip() for line in step)
             absence_background.append(f"'{formatted_step}' appears {count} times")
-            total_absence_backgrounds += count
-
-    for step, count in filtered_given_counts.items():
-        if count >= total_scenarios > 1:
-            absence_background.append(f"'{step}' appears {count} times")
             total_absence_backgrounds += count
 
     if absence_background:
@@ -173,6 +167,11 @@ feature_files_example = [
             Given step 1
             When step 2
             Then step 3
+            
+        Scenario: Fourth scenario
+            Given step 1
+            When step 2
+            Then step 3
     """,
     """
 Feature: Example feature 2
@@ -198,4 +197,4 @@ filenames_example = [
     "file2.feature"
 ]
 
-# find_absence_background(filenames_example, feature_files_example)
+find_absence_background(filenames_example, feature_files_example)
