@@ -197,4 +197,4 @@ filenames_example = [
     "file2.feature"
 ]
 
-find_absence_background(filenames_example, feature_files_example)
+# find_absence_background(filenames_example, feature_files_example)
