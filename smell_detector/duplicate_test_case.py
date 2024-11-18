@@ -1,3 +1,4 @@
+import read_file
 import re
 import csv
 import os
@@ -23,8 +24,7 @@ def find_duplicate_test_cases(filenames, feature_files, csv_filename=None):
         lines = text.splitlines()
         
         # Use re.findall to capture "Scenario:", "Example:", and "Scenario Outline:"
-        test_cases = re.finditer(r"(Scenario:[\s\S]*?|Example:[\s\S]*?|Scenario Outline:[\s\S]*?)(?=Scenario:|Example:|Scenario Outline:|$)", text)
-        
+        test_cases = re.finditer(r"(Scenario:[\s\S]*?|Example:[\s\S]*?|Scenario Outline:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Example:|Scenario Outline:|$)", text)
         for match in test_cases:
             test_case = match.group(0).strip()
             line_number = text.count('\n', 0, match.start(0)) + 1  # Calculate line number
@@ -32,7 +32,6 @@ def find_duplicate_test_cases(filenames, feature_files, csv_filename=None):
             # Exclude the first line (title) for comparison
             test_case_lines = test_case.splitlines()
             test_case_body = '\n'.join(test_case_lines[1:]).strip()
-
             if test_case_body not in test_case_count:
                 test_case_count[test_case_body] = {'count': 0, 'titles_and_files': []}
             test_case_count[test_case_body]['count'] += 1
@@ -45,7 +44,7 @@ def find_duplicate_test_cases(filenames, feature_files, csv_filename=None):
             report_data.append([data['count'], '\n'.join(data['titles_and_files']), test_case_body])
 
     # Print overall report
-    total_test_cases = sum(len(re.findall(r"(Scenario:[\s\S]*?|Example:[\s\S]*?|Scenario Outline:[\s\S]*?)(?=Scenario:|Example:|Scenario Outline:|$)", text)) for text in feature_files)
+    total_test_cases = sum(len(re.findall(r"(Scenario:[\s\S]*?|Example:[\s\S]*?|Scenario Outline:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Example:|Scenario Outline:|$)", text)) for text in feature_files)
     print(f"- Total number of test cases: {total_test_cases}")
     print(f"- Duplicate test cases:")
     
