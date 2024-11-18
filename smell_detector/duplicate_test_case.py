@@ -1,4 +1,3 @@
-import read_file
 import re
 import csv
 import os
