@@ -23,8 +23,6 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
 
     vicious_tags = []
     total_vicious_tags = 0
-    total_scenarios = 0
-
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find tags into feature
         rules = re.findall(rule_tag_pattern, feature_file)
@@ -38,12 +36,11 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
         examples = [t.strip() for t in examples if t.strip()]
 
         # Calculating all scenarios into feature
+        total_scenarios_feature = scenarios + scenarios_outline + examples
         total_scenarios = len(scenarios) + len(scenarios_outline) + len(examples)
 
         total_vicious_tags = vicious_analysis(filename, rules, vicious_tags, len(rules), total_vicious_tags, 'Rule')
-        total_vicious_tags = vicious_analysis(filename, scenarios, vicious_tags, total_scenarios, total_vicious_tags, 'Scenario')
-        total_vicious_tags = vicious_analysis(filename, scenarios_outline, vicious_tags, total_scenarios, total_vicious_tags, 'Scenario')
-        total_vicious_tags = vicious_analysis(filename, examples, vicious_tags, total_scenarios, total_vicious_tags, 'Scenario')
+        total_vicious_tags = vicious_analysis(filename, total_scenarios_feature, vicious_tags, total_scenarios, total_vicious_tags, 'Scenario')
 
     if vicious_tags:
         # Transforming vicious_tags into a string

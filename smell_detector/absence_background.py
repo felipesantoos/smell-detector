@@ -36,13 +36,10 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
         examples = [e.strip() for e in examples if e.strip()]
 
         # Calculating all feature scenarios
+        total_scenarios_feature = scenarios + scenarios_outline + examples
         total_scenarios = len(scenarios) + len(scenarios_outline) + len(examples)
 
-        total_absence_backgrounds = absence_analysis(filename, scenarios, step_pattern, partition_pattern,
-                                                     absences_backgrounds, total_scenarios, total_absence_backgrounds)
-        total_absence_backgrounds = absence_analysis(filename, scenarios_outline, step_pattern, partition_pattern,
-                                                     absences_backgrounds, total_scenarios, total_absence_backgrounds)
-        total_absence_backgrounds = absence_analysis(filename, examples, step_pattern, partition_pattern,
+        total_absence_backgrounds = absence_analysis(filename, total_scenarios_feature, step_pattern, partition_pattern,
                                                      absences_backgrounds, total_scenarios, total_absence_backgrounds)
 
     if absences_backgrounds:
