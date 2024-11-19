@@ -21,10 +21,10 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
     total_example_pattern = r"Example:.*"
     # TODO: Implement for examples in the same Scenario Outline
 
-    rule_tag_pattern = r"((?:@\w+\s*)+)(?=\s*Rule:)"
-    scenario_tag_pattern = r"((?:@\w+\s*)+)(?=\s*Scenario:)"
-    scenario_outline_tag_pattern = r"((?:@\w+\s*)+)(?=\s*Scenario Outline:)"
-    example_tag_pattern = r"((?:@\w+\s*)+)(?=\s*Example:)"
+    rule_tag_pattern = r"((?:@[A-Za-z0-9_.]+\s*)+)(?=\s*Rule:)"
+    scenario_tag_pattern = r"((?:@[A-Za-z0-9_.]+\s*)+)(?=\s*Scenario:)"
+    scenario_outline_tag_pattern = r"((?:@[A-Za-z0-9_.]+\s*)+)(?=\s*Scenario Outline:)"
+    example_tag_pattern = r"((?:@[A-Za-z0-9_.]+\s*)+)(?=\s*Example:)"
     # TODO: Implement for examples in the same Scenario Outline
 
     vicious_tags = []
@@ -89,7 +89,7 @@ def vicious_analysis(filename, registers, vicious_tags, total_scenarios, total_v
 
     for register_index, register in enumerate(registers):
         register = register.strip()
-        tags = re.findall(r'@\w+', register)
+        tags = re.findall(r'@[A-Za-z0-9_.]+', register)
 
         tags_scenarios_feature.append(tags)
 
