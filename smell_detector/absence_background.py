@@ -23,7 +23,6 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
 
     absences_backgrounds = []
     total_absence_backgrounds = 0
-    total_scenarios = 0
 
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find scenarios into feature
