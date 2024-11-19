@@ -15,11 +15,29 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
     Returns:
     - None
     """
-    total_rule_pattern = r"Rule:.*"
-    total_scenario_pattern = r"Scenario:.*"
-    total_scenario_outline_pattern = r"Scenario Outline:.*"
-    total_example_pattern = r"Example:.*"
-    # TODO: Implement for examples in the same Scenario Outline
+
+    total_rules = []
+    total_scenarios = []
+    # Process each feature file
+    for filename, text in zip(feature_filenames, feature_files):
+        lines = text.splitlines()
+        for idx, line in enumerate(lines, start=1):  # Enumerate lines with 1-based index
+            # Match Scenario, Example, and Scenario Outline titles
+            match = re.match(r"^\s*(Rule:)\s*(.+)$", line)
+            if match:
+                _, title_name = match.groups()  # Extract the title part after the colon
+                normalized_title = title_name.strip()  # Normalize by trimming whitespace
+
+                total_rules.append(normalized_title)
+
+        for idx, line in enumerate(lines, start=1):  # Enumerate lines with 1-based index
+            # Match Scenario, Example, and Scenario Outline titles
+            match = re.match(r"^\s*(Scenario:|Example:|Scenario Outline:)\s*(.+)$", line)
+            if match:
+                _, title_name = match.groups()  # Extract the title part after the colon
+                normalized_title = title_name.strip()  # Normalize by trimming whitespace
+
+                total_scenarios.append(normalized_title)
 
     rule_tag_pattern = r"((?:@[\S]+\s*)+)(?=\s*Rule:)"
     scenario_tag_pattern = r"((?:@[\S]+\s*)+)(?=\s*Scenario:)"
@@ -30,12 +48,6 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
     vicious_tags = []
     total_vicious_tags = 0
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
-        # Calculating total
-        total_rules = re.findall(total_rule_pattern, feature_file)
-        total_scenarios = re.findall(total_scenario_pattern, feature_file)
-        total_scenarios_outline = re.findall(total_scenario_outline_pattern, feature_file)
-        total_examples = re.findall(total_example_pattern, feature_file)
-
         # Find tags into feature
         rules = re.findall(rule_tag_pattern, feature_file)
         scenarios = re.findall(scenario_tag_pattern, feature_file)
@@ -48,11 +60,10 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
         examples = [t.strip() for t in examples if t.strip()]
 
         # Calculating all scenarios into feature
-        total_scenarios = len(total_scenarios) + len(total_scenarios_outline) + len(total_examples)
         total_tagged_scenarios_feature = scenarios + scenarios_outline + examples
 
         total_vicious_tags = vicious_analysis(filename, rules, vicious_tags, len(total_rules), total_vicious_tags, 'Rule')
-        total_vicious_tags = vicious_analysis(filename, total_tagged_scenarios_feature, vicious_tags, total_scenarios, total_vicious_tags, 'Scenario')
+        total_vicious_tags = vicious_analysis(filename, total_tagged_scenarios_feature, vicious_tags, len(total_scenarios), total_vicious_tags, 'Scenario')
 
     if vicious_tags:
         # Transforming vicious_tags into a string
