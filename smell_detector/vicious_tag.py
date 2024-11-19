@@ -56,6 +56,7 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
 
         total_rules.clear()
         total_scenarios.clear()
+
     if vicious_tags:
         # Transforming vicious_tags into a string
         for register in vicious_tags:

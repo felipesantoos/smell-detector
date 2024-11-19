@@ -21,10 +21,18 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
     step_pattern = r"(Given[\s\S]*?)(?=Given|When|Then|Scenario:|Scenario Outline:|Example:|Examples:|$)"
     partition_pattern = r"(?:Given\s|And\s|But\s)"
 
+    total_scenarios = []
+
+    total_scenario_pattern = r"^\s*(Scenario:|Example:|Scenario Outline:)\s*(.+)$"
+
     absences_backgrounds = []
     total_absence_backgrounds = 0
-
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
+        lines = feature_file.splitlines()
+        for idx, line in enumerate(lines, start=1):  # Enumerate lines with 1-based index
+            # Match Rule, Scenario, Example, and Scenario Outline titles
+            match_structure(line, total_scenarios, total_scenario_pattern)
+
         # Find scenarios into feature
         scenarios = re.findall(scenario_pattern, feature_file)
         scenarios_outline = re.findall(scenario_outline_pattern, feature_file)
@@ -36,10 +44,10 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
 
         # Calculating all feature scenarios
         total_scenarios_feature = scenarios + scenarios_outline + examples
-        total_scenarios = len(scenarios) + len(scenarios_outline) + len(examples)
 
         total_absence_backgrounds = absence_analysis(filename, total_scenarios_feature, step_pattern, partition_pattern,
-                                                     absences_backgrounds, total_scenarios, total_absence_backgrounds)
+                                                     absences_backgrounds, len(total_scenarios), total_absence_backgrounds)
+        total_scenarios.clear()
 
     if absences_backgrounds:
         # Transforming absences_backgrounds into a string
@@ -69,6 +77,15 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
             print(f"Report saved to {csv_filename}.")
     else:
         print("No registers with absence of background.")
+
+
+def match_structure(line, total_list, pattern):
+    match = re.match(pattern, line)
+    if match:
+        _, title_name = match.groups()  # Extract the title part after the colon
+        normalized_title = title_name.strip()  # Normalize by trimming whitespace
+
+        total_list.append(normalized_title)
 
 
 def absence_analysis(filename, registers, step_pattern, partition_pattern, absences_backgrounds, total_scenarios, total_absence_backgrounds):
