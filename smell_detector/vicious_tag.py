@@ -16,38 +16,27 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
     - None
     """
 
-    total_rules = []
-    total_scenarios = []
-    # Process each feature file
-    for filename, text in zip(feature_filenames, feature_files):
-        lines = text.splitlines()
-        for idx, line in enumerate(lines, start=1):  # Enumerate lines with 1-based index
-            # Match Scenario, Example, and Scenario Outline titles
-            match = re.match(r"^\s*(Rule:)\s*(.+)$", line)
-            if match:
-                _, title_name = match.groups()  # Extract the title part after the colon
-                normalized_title = title_name.strip()  # Normalize by trimming whitespace
-
-                total_rules.append(normalized_title)
-
-        for idx, line in enumerate(lines, start=1):  # Enumerate lines with 1-based index
-            # Match Scenario, Example, and Scenario Outline titles
-            match = re.match(r"^\s*(Scenario:|Example:|Scenario Outline:)\s*(.+)$", line)
-            if match:
-                _, title_name = match.groups()  # Extract the title part after the colon
-                normalized_title = title_name.strip()  # Normalize by trimming whitespace
-
-                total_scenarios.append(normalized_title)
-
     rule_tag_pattern = r"((?:@[\S]+\s*)+)(?=\s*Rule:)"
     scenario_tag_pattern = r"((?:@[\S]+\s*)+)(?=\s*Scenario:)"
     scenario_outline_tag_pattern = r"((?:@[\S]+\s*)+)(?=\s*Scenario Outline:)"
     example_tag_pattern = r"((?:@[\S]+\s*)+)(?=\s*Example:)"
     # TODO: Implement for examples in the same Scenario Outline
 
+    total_rules = []
+    total_scenarios = []
+
+    total_rule_pattern = r"^\s*(Rule:)\s*(.+)$"
+    total_scenario_pattern = r"^\s*(Scenario:|Example:|Scenario Outline:)\s*(.+)$"
+
     vicious_tags = []
     total_vicious_tags = 0
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
+        lines = feature_file.splitlines()
+        for idx, line in enumerate(lines, start=1):  # Enumerate lines with 1-based index
+            # Match Rule, Scenario, Example, and Scenario Outline titles
+            match_structure(line, total_rules, total_rule_pattern)
+            match_structure(line, total_scenarios, total_scenario_pattern)
+
         # Find tags into feature
         rules = re.findall(rule_tag_pattern, feature_file)
         scenarios = re.findall(scenario_tag_pattern, feature_file)
@@ -65,6 +54,8 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
         total_vicious_tags = vicious_analysis(filename, rules, vicious_tags, len(total_rules), total_vicious_tags, 'Rule')
         total_vicious_tags = vicious_analysis(filename, total_tagged_scenarios_feature, vicious_tags, len(total_scenarios), total_vicious_tags, 'Scenario')
 
+        total_rules.clear()
+        total_scenarios.clear()
     if vicious_tags:
         # Transforming vicious_tags into a string
         for register in vicious_tags:
@@ -93,6 +84,15 @@ def find_vicious_tags(feature_filenames, feature_files, csv_filename=None):
             print(f"Report saved to {csv_filename}.")
     else:
         print("No registers with vicious tags.")
+
+
+def match_structure(line, total_list, pattern):
+    match = re.match(pattern, line)
+    if match:
+        _, title_name = match.groups()  # Extract the title part after the colon
+        normalized_title = title_name.strip()  # Normalize by trimming whitespace
+
+        total_list.append(normalized_title)
 
 
 def vicious_analysis(filename, registers, vicious_tags, total_scenarios, total_vicious_tags, type):
