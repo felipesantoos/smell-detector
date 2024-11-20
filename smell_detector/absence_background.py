@@ -18,7 +18,7 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
     scenario_pattern = r"(Scenario:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
     scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
     example_pattern = r"(Example:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
-    step_pattern = r"(Given[\s\S]*?)(?=Given|When|Then|Scenario:|Scenario Outline:|Example:|Examples:|$)"
+    step_pattern = r"(?:Scenario:|Scenario Outline:|Example:)[\s\S]*?(?:(Given[\s\S]*?|And[\s\S]*?))(?=When|Then|Scenario:|Scenario Outline:|Example:|Examples:|$)"
     partition_pattern = r"(?:Given\s|And\s|But\s)"
 
     total_scenarios = []
