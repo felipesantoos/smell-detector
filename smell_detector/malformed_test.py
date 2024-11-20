@@ -109,7 +109,7 @@ def malformed_tests_structure(filename, register_line, keyword_counts, register,
             step_line = 0
             lines = register.split("\n")
             for line_index, line in enumerate(lines):
-                if re.search(keyword, line):
+                if re.search(re.escape(keyword), line):
                     step_line = register_line + line_index
                     break
 

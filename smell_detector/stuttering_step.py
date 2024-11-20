@@ -105,7 +105,7 @@ def stuttering_steps_structure(filename, register_line, stuttering_counts, regis
             step_line = 0
             lines = register.split("\n")
             for line_index, line in enumerate(lines):
-                if re.search(step, line):
+                if re.search(re.escape(step), line):
                     step_line = register_line + line_index
                     break
 
