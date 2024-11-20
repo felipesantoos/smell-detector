@@ -26,33 +26,32 @@ def find_stuttering_steps(feature_filenames, feature_files, csv_filename=None):
 
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find background or scenarios into feature
-        backgrounds = re.findall(background_pattern, feature_file)
-        scenarios = re.findall(scenario_pattern, feature_file)
-        scenarios_outline = re.findall(scenario_outline_pattern, feature_file)
-        examples = re.findall(example_pattern, feature_file)
+        backgrounds = [(match.group().strip(), feature_file[:match.start()].count('\n') + 1)
+                       for match in re.finditer(background_pattern, feature_file)]
+        scenarios = [(match.group().strip(), feature_file[:match.start()].count('\n') + 1)
+                     for match in re.finditer(scenario_pattern, feature_file)]
+        scenarios_outline = [(match.group().strip(), feature_file[:match.start()].count('\n') + 1)
+                             for match in re.finditer(scenario_outline_pattern, feature_file)]
+        examples = [(match.group().strip(), feature_file[:match.start()].count('\n') + 1)
+                    for match in re.finditer(example_pattern, feature_file)]
 
-        backgrounds = [b.strip() for b in backgrounds if b.strip()]
-        scenarios = [s.strip() for s in scenarios if s.strip()]
-        scenarios_outline = [so.strip() for so in scenarios_outline if so.strip()]
-        examples = [e.strip() for e in examples if e.strip()]
+        total_registers = backgrounds + scenarios + scenarios_outline + examples
 
-        total_stuttering_steps = stuttering_analysis(filename, backgrounds, step_pattern, stuttering_steps, total_stuttering_steps)
-        total_stuttering_steps = stuttering_analysis(filename, scenarios, step_pattern, stuttering_steps, total_stuttering_steps)
-        total_stuttering_steps = stuttering_analysis(filename, scenarios_outline, step_pattern, stuttering_steps, total_stuttering_steps)
-        total_stuttering_steps = stuttering_analysis(filename, examples, step_pattern, stuttering_steps, total_stuttering_steps)
+        total_stuttering_steps = stuttering_analysis(filename, total_registers, step_pattern, stuttering_steps, total_stuttering_steps)
 
     if stuttering_steps:
-        # Transforming stuttering_step into a string
+        # Transforming file_and_line and stuttering_step into a string
         for register in stuttering_steps:
+            register["file_and_line"] = '\n'.join(register["file_and_line"])
             register["stuttering_step"] = '\n'.join(register["stuttering_step"])
 
         report_data = [
-            [stuttering_step["filename"], stuttering_step["scenario_type_position"], stuttering_step["stuttering_step"], stuttering_step["register"]]
+            [stuttering_step["file_and_line"], stuttering_step["stuttering_step"], stuttering_step["register"]]
             for stuttering_step in stuttering_steps
         ]
 
         print(f"- Total number of stuttering steps: {total_stuttering_steps}")
-        print(tabulate(report_data, headers=["Filename", "Position by Type", "Stuttering Step", "Reference"], tablefmt="grid"))
+        print(tabulate(report_data, headers=["File and Line Position", "Stuttering Step", "Reference"], tablefmt="grid"))
 
         # Generate CSV if filename is provided
         if csv_filename:
@@ -64,7 +63,7 @@ def find_stuttering_steps(feature_filenames, feature_files, csv_filename=None):
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile, delimiter=';')
                 if not file_exists:  # Write header only if the file is new
-                    csv_writer.writerow(["Filename", "Position by Type", "Stuttering Step", "Reference"])  # Write header
+                    csv_writer.writerow(["File and Line Position", "Stuttering Step", "Reference"])  # Write header
                 csv_writer.writerows(report_data)  # Write data
             print(f"Report saved to {csv_filename}.")
     else:
@@ -73,12 +72,10 @@ def find_stuttering_steps(feature_filenames, feature_files, csv_filename=None):
 
 # Verifying into background or scenario if it has some stuttering step
 def stuttering_analysis(filename, registers, step_pattern, stuttering_steps, total_stuttering_steps):
-    original_registers = registers.copy()
+    original_registers = [register_content for register_content, _ in registers]
 
-    for register_index, register in enumerate(registers):
+    for register_index, (register, register_line) in enumerate(registers):
         registers[register_index] = re.sub("\n\n", "\n", register)
-
-    for register_index, register in enumerate(registers):
         register = register.strip()
         steps = re.findall(step_pattern, register)
 
@@ -86,7 +83,7 @@ def stuttering_analysis(filename, registers, step_pattern, stuttering_steps, tot
         stuttering_counts = stuttering_counter(steps)
 
         # Organizing the result into a list
-        total_stuttering_steps = stuttering_steps_structure(filename, stuttering_counts, original_registers[register_index], register_index,
+        total_stuttering_steps = stuttering_steps_structure(filename, register_line, stuttering_counts, original_registers[register_index],
                                                             stuttering_steps, total_stuttering_steps)
     return total_stuttering_steps
 
@@ -99,18 +96,26 @@ def stuttering_counter(steps):
     return step_counts
 
 
-def stuttering_steps_structure(filename, stuttering_counts, register, scenario_index, stuttering_steps,
+def stuttering_steps_structure(filename, register_line, stuttering_counts, register, stuttering_steps,
                                total_stuttering_steps):
     stuttering_step = []
+    file_and_line = []
     for step, count in stuttering_counts.items():
         if count > 1:
+            step_line = 0
+            lines = register.split("\n")
+            for line_index, line in enumerate(lines):
+                if re.search(step, line):
+                    step_line = register_line + line_index
+                    break
+
+            file_and_line.append(f"{filename}:{step_line}")
             stuttering_step.append(f"'{step}' appears {count} times")
             total_stuttering_steps += count
 
     if stuttering_step:
         stuttering_steps.append({
-            "filename": filename,
-            "scenario_type_position": scenario_index + 1,
+            "file_and_line": file_and_line,
             "stuttering_step": stuttering_step,
             "register": register
         })
@@ -128,6 +133,13 @@ feature_files_example = [
             And step 4
             Then step 5
             And step 6
+            
+        Scenario: Second scenario
+            Given step 1
+            Given step 1
+            When step 2
+            When step 2
+            Then step 3
     """,
     """
     Feature: Example feature 2

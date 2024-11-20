@@ -26,33 +26,32 @@ def find_malformed_test(feature_filenames, feature_files, csv_filename=None):
 
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find background or scenarios into feature
-        backgrounds = re.findall(background_pattern, feature_file)
-        scenarios = re.findall(scenario_pattern, feature_file)
-        scenarios_outline = re.findall(scenario_outline_pattern, feature_file)
-        examples = re.findall(example_pattern, feature_file)
+        backgrounds = [(match.group().strip(), feature_file[:match.start()].count('\n') + 1)
+                       for match in re.finditer(background_pattern, feature_file)]
+        scenarios = [(match.group().strip(), feature_file[:match.start()].count('\n') + 1)
+                     for match in re.finditer(scenario_pattern, feature_file)]
+        scenarios_outline = [(match.group().strip(), feature_file[:match.start()].count('\n') + 1)
+                             for match in re.finditer(scenario_outline_pattern, feature_file)]
+        examples = [(match.group().strip(), feature_file[:match.start()].count('\n') + 1)
+                    for match in re.finditer(example_pattern, feature_file)]
 
-        backgrounds = [b.strip() for b in backgrounds if b.strip()]
-        scenarios = [s.strip() for s in scenarios if s.strip()]
-        scenarios_outline = [so.strip() for so in scenarios_outline if so.strip()]
-        examples = [e.strip() for e in examples if e.strip()]
+        total_registers = backgrounds + scenarios + scenarios_outline + examples
 
-        total_malformed_tests = malformed_analysis(filename, backgrounds, step_pattern, malformed_registers, total_malformed_tests)
-        total_malformed_tests = malformed_analysis(filename, scenarios, step_pattern, malformed_registers, total_malformed_tests)
-        total_malformed_tests = malformed_analysis(filename, scenarios_outline, step_pattern, malformed_registers, total_malformed_tests)
-        total_malformed_tests = malformed_analysis(filename, examples, step_pattern, malformed_registers, total_malformed_tests)
+        total_malformed_tests = malformed_analysis(filename, total_registers, step_pattern, malformed_registers, total_malformed_tests)
 
     if malformed_registers:
-        # Transforming malformed_tests into a string
+        # Transforming file_and_line and malformed_tests into a string
         for register in malformed_registers:
+            register["file_and_line"] = '\n'.join(register["file_and_line"])
             register["justification"] = '\n'.join(register["justification"])
 
         report_data = [
-            [malformed_register["filename"], malformed_register["scenario_type_position"], malformed_register["justification"], malformed_register["register"]]
+            [malformed_register["file_and_line"], malformed_register["justification"], malformed_register["register"]]
             for malformed_register in malformed_registers
         ]
 
         print(f"- Total number of malformed tests by occurrence: {total_malformed_tests}")
-        print(tabulate(report_data, headers=["Filename", "Position by Type", "Justification", "Reference"], tablefmt="grid"))
+        print(tabulate(report_data, headers=["File and Line Position", "Justification", "Reference"], tablefmt="grid"))
 
         # Generate CSV if filename is provided
         if csv_filename:
@@ -64,7 +63,7 @@ def find_malformed_test(feature_filenames, feature_files, csv_filename=None):
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                 csv_writer = csv.writer(csvfile, delimiter=';')
                 if not file_exists:  # Write header only if the file is new
-                    csv_writer.writerow(["Filename", "Position by Type", "Justification", "Reference"])  # Write header
+                    csv_writer.writerow(["File and Line Position", "Justification", "Reference"])  # Write header
                 csv_writer.writerows(report_data)  # Write data
             print(f"Report saved to {csv_filename}.")
     else:
@@ -73,12 +72,10 @@ def find_malformed_test(feature_filenames, feature_files, csv_filename=None):
 
 # Verifying into background or scenario if it has some malformed test
 def malformed_analysis(filename, registers, step_pattern, malformed_registers, total_malformed_tests):
-    original_registers = registers.copy()
+    original_registers = [register_content for register_content, _ in registers]
 
-    for register_index, register in enumerate(registers):
+    for register_index, (register, register_line) in enumerate(registers):
         registers[register_index] = re.sub("\n\n", "\n", register)
-
-    for register_index, register in enumerate(registers):
         register = register.strip()
         steps = re.findall(step_pattern, register)
 
@@ -86,7 +83,7 @@ def malformed_analysis(filename, registers, step_pattern, malformed_registers, t
         keyword_counts = malformed_tests_counter(steps)
 
         # Organizing the result into a list
-        total_malformed_tests = malformed_tests_structure(filename, keyword_counts, original_registers[register_index], register_index,
+        total_malformed_tests = malformed_tests_structure(filename, register_line, keyword_counts, original_registers[register_index],
                                                                   malformed_registers, total_malformed_tests)
     return total_malformed_tests
 
@@ -103,21 +100,31 @@ def malformed_tests_counter(steps):
     return keyword_counts
 
 
-def malformed_tests_structure(filename, keyword_counts, register, scenario_index, malformed_registers,
+def malformed_tests_structure(filename, register_line, keyword_counts, register, malformed_registers,
                               total_malformed_tests):
     malformed_keywords = []
+    file_and_line = []
     for keyword, count in keyword_counts.items():
         if count > 1:
+            step_line = 0
+            lines = register.split("\n")
+            for line_index, line in enumerate(lines):
+                if re.search(keyword, line):
+                    step_line = register_line + line_index
+                    break
+
+            file_and_line.append(f"{filename}:{step_line}")
             malformed_keywords.append(f"{keyword} appears {count} times")
             total_malformed_tests += count
+
         if count == 0 and keyword != "Given" and not register.startswith("Background:"):
+            file_and_line.append(f"{filename}:{register_line}")
             malformed_keywords.append(f"{keyword} appears zero times")
             total_malformed_tests += 1
 
     if malformed_keywords:
         malformed_registers.append({
-            "filename": filename,
-            "scenario_type_position": scenario_index + 1,
+            "file_and_line": file_and_line,
             "justification": malformed_keywords,
             "register": register
         })
