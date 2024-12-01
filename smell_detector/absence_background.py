@@ -15,14 +15,13 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
     Returns:
     - None
     """
-    scenario_pattern = r"(Scenario:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
-    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
-    example_pattern = r"(Example:[\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Scenario Outline:|Example:|$)"
+    scenario_pattern = r"(Scenario:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
+    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
+    example_pattern = r"(Example:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
     step_pattern = r"(?:Scenario:|Scenario Outline:|Example:)[\s\S]*?(?:(Given[\s\S]*?|And[\s\S]*?))(?=When|Then|Scenario:|Scenario Outline:|Example:|Examples:|$)"
     partition_pattern = r"(?:Given\s|And\s|But\s)"
 
     total_scenarios = []
-
     total_scenario_pattern = r"^\s*(Scenario:|Example:|Scenario Outline:)\s*(.+)$"
 
     absences_backgrounds = []
@@ -34,13 +33,9 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
             match_structure(line, total_scenarios, total_scenario_pattern)
 
         # Find scenarios into feature
-        scenarios = re.findall(scenario_pattern, feature_file)
-        scenarios_outline = re.findall(scenario_outline_pattern, feature_file)
-        examples = re.findall(example_pattern, feature_file)
-
-        scenarios = [s.strip() for s in scenarios if s.strip()]
-        scenarios_outline = [so.strip() for so in scenarios_outline if so.strip()]
-        examples = [e.strip() for e in examples if e.strip()]
+        scenarios = [match[0].strip() for match in re.findall(scenario_pattern, feature_file)]
+        scenarios_outline = [match[0].strip() for match in re.findall(scenario_outline_pattern, feature_file)]
+        examples = [match[0].strip() for match in re.findall(example_pattern, feature_file)]
 
         # Calculating all feature scenarios
         total_scenarios_feature = scenarios + scenarios_outline + examples
@@ -90,7 +85,6 @@ def match_structure(line, total_list, pattern):
 
 def absence_analysis(filename, registers, step_pattern, partition_pattern, absences_backgrounds, total_scenarios, total_absence_backgrounds):
     steps_scenarios_feature = []
-
     for register_index, register in enumerate(registers):
         registers[register_index] = re.sub("\n\n", "\n", register)
 

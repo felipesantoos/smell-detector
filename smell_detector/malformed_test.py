@@ -23,7 +23,6 @@ def find_malformed_test(feature_filenames, feature_files, csv_filename=None):
 
     malformed_registers = []
     total_malformed_tests = 0
-
     for feature_index, (filename, feature_file) in enumerate(zip(feature_filenames, feature_files)):
         # Find background or scenarios into feature
         backgrounds = [(group.strip(), feature_file[:match.start()].count('\n') + 1)
