@@ -7,7 +7,7 @@ from duplicate_feature_title import find_duplicate_feature_titles
 from duplicate_test_case import find_duplicate_test_cases
 from absence_background import find_absence_background
 from vicious_tag import find_vicious_tags
-from stuttering_step import find_stuttering_steps
+from duplicate_step import find_duplicate_steps
 from malformed_test import find_malformed_test
 
 feature_files_dir = "../"
@@ -59,10 +59,10 @@ def execute_project(project):
     find_vicious_tags([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/vicious_tag.csv")
     finish_test()
 
-    # Stuttering Step
-    title("Stuttering Step", "blue")
+    # Duplicate Step
+    title("Duplicate Step", "blue")
     start_test()
-    find_stuttering_steps([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/stuttering_step.csv")
+    find_duplicate_steps([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_step.csv")
     finish_test()
 
     # Malformed Test
