@@ -8,6 +8,7 @@ from duplicate_test_case import find_duplicate_test_cases
 from absence_background import find_absence_background
 from vicious_tag import find_vicious_tags
 from duplicate_step import find_duplicate_steps
+from starting_with_the_left_foot import find_starting_with_the_left_foot
 from malformed_test import find_malformed_test
 
 feature_files_dir = "../"
@@ -65,7 +66,13 @@ def execute_project(project):
     find_duplicate_steps([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/duplicate_step.csv")
     finish_test()
 
-    # Malformed Test
+    # Starting With The Left Foot
+    title("Starting With The Left Foot", "blue")
+    start_test()
+    find_starting_with_the_left_foot([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/starting_with_the_left_foot.csv")
+    finish_test()
+
+    # # Malformed Test
     title("Malformed Test", "blue")
     start_test()
     find_malformed_test([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/malformed_test.csv")
