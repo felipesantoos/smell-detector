@@ -72,7 +72,7 @@ def execute_project(project):
     find_starting_with_the_left_foot([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/starting_with_the_left_foot.csv")
     finish_test()
 
-    # # Malformed Test
+    # Malformed Test
     title("Malformed Test", "blue")
     start_test()
     find_malformed_test([str(filename).removeprefix(feature_files_dir) for filename in filenames], contents, "reports/malformed_test.csv")

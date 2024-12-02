@@ -15,11 +15,11 @@ def find_duplicate_steps(feature_filenames, feature_files, csv_filename=None):
     Returns:
     - None
     """
-    background_pattern = r"(Background:.*)([\s\S]*?)(?=(?:([@#][\s\S]*?)?Scenario:)|(?:([@#][\s\S]*?)?Scenario Outline:)|(?:([@#][\s\S]*?)?Example:)|$)"
-    scenario_pattern = r"(Scenario:.*)([\s\S]*?)(?=(?:([@#][\s\S]*?)?Scenario:)|(?:([@#][\s\S]*?)?Scenario Outline:)|(?:([@#][\s\S]*?)?Example:)|$)"
-    scenario_outline_pattern = r"(Scenario Outline:.*)([\s\S]*?)(?=(?:([@#][\s\S]*?)?Scenario:)|(?:([@#][\s\S]*?)?Scenario Outline:)|(?:([@#][\s\S]*?)?Example:)|$)"
-    example_pattern = r"(Example:.*)([\s\S]*?)(?=(?:([@#][\s\S]*?)?Scenario:)|(?:([@#][\s\S]*?)?Scenario Outline:)|(?:([@#][\s\S]*?)?Example:)|$)"
-    step_pattern = r"(?:Given|When|Then|And|But)([\s\S]*?)(?=Given|When|Then|And|But|Scenario:|Scenario Outline:|Example:|Examples:|$)"
+    background_pattern = r"(Background:.*)([\s\S]*?)(?=(?:([@#][\s\S]*?)?Scenario:)|(?:([@#][\s\S]*?)?Scenario Outline:)|(?:([@#][\s\S]*?)?Example:)|(?:([@#][\s\S]*?)?Rule:)|$)"
+    scenario_pattern = r"(Scenario:.*)([\s\S]*?)(?=(?:([@#][\s\S]*?)?Scenario:)|(?:([@#][\s\S]*?)?Scenario Outline:)|(?:([@#][\s\S]*?)?Example:)|(?:([@#][\s\S]*?)?Rule:)|$)"
+    scenario_outline_pattern = r"(Scenario Outline:.*)([\s\S]*?)(?=(?:([@#][\s\S]*?)?Scenario:)|(?:([@#][\s\S]*?)?Scenario Outline:)|(?:([@#][\s\S]*?)?Example:)|(?:([@#][\s\S]*?)?Rule:)|$)"
+    example_pattern = r"(Example:.*)([\s\S]*?)(?=(?:([@#][\s\S]*?)?Scenario:)|(?:([@#][\s\S]*?)?Scenario Outline:)|(?:([@#][\s\S]*?)?Example:)|(?:([@#][\s\S]*?)?Rule:)|$)"
+    step_pattern = r"(?:Given|When|Then|And|But)([\s\S]*?)(?=Given|When|Then|And|But|Scenario:|Scenario Outline:|Example:|Examples:|Rule:|$)"
 
     duplicate_steps = []
     total_duplicate_steps = 0

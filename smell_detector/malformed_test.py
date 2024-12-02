@@ -15,10 +15,10 @@ def find_malformed_test(feature_filenames, feature_files, csv_filename=None):
     Returns:
     - None
     """
-    background_pattern = r"(Background:.*)([\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    scenario_pattern = r"(Scenario:.*)([\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    scenario_outline_pattern = r"(Scenario Outline:.*)([\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    example_pattern = r"(Example:.*)([\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
+    background_pattern = r"(Background:.*)([\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    scenario_pattern = r"(Scenario:.*)([\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    scenario_outline_pattern = r"(Scenario Outline:.*)([\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    example_pattern = r"(Example:.*)([\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
     step_pattern = r"(Given.*|When.*|Then.*)"
 
     malformed_registers = []

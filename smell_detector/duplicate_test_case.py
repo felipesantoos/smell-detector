@@ -23,7 +23,7 @@ def find_duplicate_test_cases(filenames, feature_files, csv_filename=None):
         lines = text.splitlines()
         
         # Use re.findall to capture "Scenario:", "Example:", and "Scenario Outline:"
-        test_cases = re.finditer(r"(Scenario:[^\n]*|Example:[^\n]*|Scenario Outline:[^\n]*)([\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Example:|Examples:|Scenario Outline:|$)", text)
+        test_cases = re.finditer(r"(Scenario:[^\n]*|Example:[^\n]*|Scenario Outline:[^\n]*)([\s\S]*?)(?=\n(?:\n\s*)*[@#]|Scenario:|Example:|Examples:|Scenario Outline:|Rule:|$)", text)
         for match in test_cases:
             test_case = match.group(0).strip()
             line_number = text.count('\n', 0, match.start(0)) + 1  # Calculate line number

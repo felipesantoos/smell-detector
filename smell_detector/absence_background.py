@@ -15,10 +15,10 @@ def find_absence_background(feature_filenames, feature_files, csv_filename=None)
     Returns:
     - None
     """
-    scenario_pattern = r"(Scenario:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    example_pattern = r"(Example:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    step_pattern = r"(?:Scenario:|Scenario Outline:|Example:)[\s\S]*?(?:(Given[\s\S]*?|And[\s\S]*?))(?=When|Then|Scenario:|Scenario Outline:|Example:|Examples:|$)"
+    scenario_pattern = r"(Scenario:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    example_pattern = r"(Example:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    step_pattern = r"(?:Scenario:|Scenario Outline:|Example:)[\s\S]*?(?:(Given[\s\S]*?|And[\s\S]*?))(?=When|Then|Scenario:|Scenario Outline:|Example:|Examples:|Rule:|$)"
     partition_pattern = r"(?:Given\s|And\s|But\s)"
 
     total_scenarios = []

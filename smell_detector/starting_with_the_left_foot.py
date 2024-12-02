@@ -15,11 +15,11 @@ def find_starting_with_the_left_foot(feature_filenames, feature_files, csv_filen
     Returns:
     - None
     """
-    scenario_pattern = r"(Scenario:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    example_pattern = r"(Example:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|$)"
-    step_pattern = r"(?:Scenario:|Scenario Outline:|Example:)[\s\S]*?(?:(Given[\s\S]*?|And[\s\S]*?|When[\s\S]*?|Then[\s\S]*?))(?=When|Then|Scenario:|Scenario Outline:|Example:|Examples:|$)"
-    partition_pattern = r"(Given[\s\S]*?|And[\s\S]*?|But[\s\S]*?|Then[\s\S]*?)(?=Given|And|But|When|Then|Scenario:|Scenario Outline:|Example:|Examples:|$)"
+    scenario_pattern = r"(Scenario:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    scenario_outline_pattern = r"(Scenario Outline:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    example_pattern = r"(Example:[\s\S]*?)(?=(?:([@#]\S*?)?Scenario:)|(?:([@#]\S*?)?Scenario Outline:)|(?:([@#]\S*?)?Example:)|(?:([@#]\S*?)?Rule:)|$)"
+    step_pattern = r"(?:Scenario:|Scenario Outline:|Example:)[\s\S]*?(?:(Given[\s\S]*?|And[\s\S]*?|When[\s\S]*?|Then[\s\S]*?))(?=When|Then|Scenario:|Scenario Outline:|Example:|Examples:|Rule:|$)"
+    partition_pattern = r"(Given[\s\S]*?|And[\s\S]*?|But[\s\S]*?|Then[\s\S]*?)(?=Given|And|But|When|Then|Scenario:|Scenario Outline:|Example:|Examples:|Rule:|$)"
 
     left_foots = []
     total_left_foots = 0
